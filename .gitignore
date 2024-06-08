@@ -1,0 +1,12 @@
+**/bin/
+bin-int/
+.vs/
+**/build/
+**/out/
+**/resources/
+
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+#CMakeSettings.json
