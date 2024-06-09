@@ -1,11 +1,11 @@
 cmake_minimum_required( VERSION 3.8)
 
-if(MSCV)
+if(MSVC)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebug$<$<CONFIG:Debug>:Debug>")
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
 endif()	
 
-project(WaveParser VERSION 1.0 LANGUAGES CXX)
+project(PARSER VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 if (POLICY CMP0141)
