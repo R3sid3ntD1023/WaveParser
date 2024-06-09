@@ -10,8 +10,8 @@ struct id3_Frame_TXXX : public id3_Frame_t
 	std::string Desciption;
 	std::string Value;
 
-	const char* get_name() const { return Desciption.c_str(); }
-	const char* get_description() const { return "user defined text information frame"; }
+	std::string get_name() const { return Desciption.c_str(); }
+	std::string get_description() const { return "user defined text information frame"; }
 
 	void process_data(FILE* f);
 

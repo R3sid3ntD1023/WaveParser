@@ -1,25 +1,58 @@
 #include "WaveParser.h"
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_WHITE	"\x1b[37m"
+
+void LogCallback(Logger::LogLevel level, const char* message)
+{
+	switch (level)
+	{
+	case Logger::info:
+		printf(ANSI_COLOR_GREEN"%s\n", message);
+		break;
+	case Logger::trace:
+		printf(ANSI_COLOR_WHITE"%s\n", message);
+		break;
+	case Logger::warn:
+		printf(ANSI_COLOR_YELLOW"%s\n", message);
+		break;
+	case Logger::error:
+		printf(ANSI_COLOR_RED"%s\n", message);
+		break;
+	default:
+		break;
+	}
+
+	printf(ANSI_COLOR_WHITE"");
+}
+
 int main(int argv, char** argc)
 {
+	Logger::SetCallback(LogCallback);
+
 	WaveParser parser(RESOURCES_PATH"Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
 	auto wave = parser.parse();
 
-	printf("chunks: \n");
+	LOG(info, "chunks:");
 	for (auto& [name, chunk] : wave.list.sub_chunks)
 	{
-		printf("\t%.*s\n", 4, chunk->get_name());
+		LOG(info, "\t{}", chunk->get_name());
 	}
 
-	printf("tags: \n");
+	LOG(info, "tags:");
 	for (auto& [name, frame] : wave.list.id3_chunk.tags)
 	{
-		printf("\t%s \n", frame->get_name());
+		LOG(info ,"\t{}", frame->get_name());
 	}
 
-	printf("length : %f\n", wave.get_length());
-	printf("num samples : %d\n", wave.get_num_samples_per_channel());
-	printf("buffer size : %d\n", wave.get_buffer_size());
+	LOG(info, "length :{}", wave.get_length());
+	LOG(info, "num samples : {}", wave.get_num_samples_per_channel());
+	LOG(info, "buffer size : {}", wave.get_buffer_size());
 	
 	return 0;
 }

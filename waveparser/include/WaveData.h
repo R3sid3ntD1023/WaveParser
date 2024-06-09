@@ -16,7 +16,7 @@ struct chunk_t
 
 	chunk_info_t header;
 	
-	const char* get_name() const { return header.id; }
+	std::string get_name() const { return std::string(header.id, 4); }
 };
 
 struct chunk_data_t : public chunk_t
@@ -48,14 +48,14 @@ struct wave_header_t
 struct id3_header_t
 {
 	char identifier[3];
-	byte version[2];
-	id3_flag flags[3];
-	byte ignored[2];
+	byte version;
+	byte flags[6];
+	
 };
 
-struct id3_t : public chunk_t
+struct id3_t
 {
-	id3_header_t id3;
+	id3_header_t header;
 	std::unordered_map<std::string, id3_frame_ptr> tags;
 };
 
@@ -70,10 +70,10 @@ struct list_chunk_t
 
 struct wave_t
 {
-	wave_header_t header;
-	fmt_chunk_t fmt;
-	list_chunk_t list;
-	chunk_data_t data;
+	wave_header_t header{};
+	fmt_chunk_t fmt{};
+	list_chunk_t list{};
+	chunk_data_t data{};
 
 	int get_num_samples_per_channel() const 
 	{

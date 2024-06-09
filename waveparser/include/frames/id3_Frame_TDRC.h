@@ -6,6 +6,6 @@
 
 struct id3_Frame_TDRC : public id3_TextFrame_t 
 {
-	const char* get_name() const { return "TDRC"; }
-	const char* get_description() const { return "RecordingTime"; }
+	std::string get_name() const { return "TDRC"; }
+	std::string get_description() const { return "RecordingTime"; }
 };

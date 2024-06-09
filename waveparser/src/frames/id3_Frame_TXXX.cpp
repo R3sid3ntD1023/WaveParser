@@ -31,5 +31,5 @@ void id3_Frame_TXXX::process_data(FILE* f)
 
 void id3_Frame_TXXX::print()
 {
-	printf("<descr = %s, value = %s>\n", Desciption.c_str(), Value.c_str());
+	LOG(info ,"{} : {}",  Desciption.c_str(), Value.c_str());
 }

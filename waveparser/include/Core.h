@@ -8,3 +8,4 @@
 
 typedef char byte;
 
+#include "WaveLogger.h"

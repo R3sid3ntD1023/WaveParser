@@ -30,8 +30,8 @@ struct id3_Frame_t
 	virtual ~id3_Frame_t() = default;
 	virtual void print() = 0;
 	virtual void process_data(FILE* f) = 0;
-	virtual const char* get_name() const = 0;
-	virtual const char* get_description() const = 0;
+	virtual std::string get_name() const = 0;
+	virtual std::string get_description() const = 0;
 };
 
 typedef std::shared_ptr<id3_Frame_t> id3_frame_ptr;
