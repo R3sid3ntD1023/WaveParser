@@ -35,9 +35,8 @@ wave_t WaveParser::parse()
             {
                 WAVE_LOG(info, "getting sound data...");
 
-                chunk_data_t data_chunk;
+                chunk_data_t data_chunk(chunk_info.size);
                 data_chunk.header = chunk_info;
-                data_chunk.data = new byte[chunk_info.size];
                 fread(data_chunk.data, sizeof(byte), chunk_info.size, f);
                 wave.data = data_chunk;
                 break;
@@ -123,13 +122,12 @@ void WaveParser::parse_list(list_chunk_t* list_chunk)
         {
             fread(&chunk_info.size, sizeof(int), 1, f);
             chunk_ptr& subchunk = list_chunk->sub_chunks[chunk_val];
-            auto extra_chunk = make_chunk(chunk_data_t);
+            auto extra_chunk = make_chunk(chunk_data_t, chunk_info.size);
             extra_chunk->header = chunk_info;
            
             if (extra_chunk->header.size)
             {
-                extra_chunk->data = new byte[chunk_info.size];
-                fread(extra_chunk->data, sizeof(byte), chunk_info.size, f);
+                fread(extra_chunk->data, sizeof(byte), extra_chunk->header.size, f);
             }
 
             subchunk = extra_chunk;
