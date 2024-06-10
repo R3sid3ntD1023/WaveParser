@@ -38,21 +38,21 @@ int main(int argv, char** argc)
 	WaveParser parser(RESOURCES_PATH"Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
 	auto wave = parser.parse();
 
-	LOG(info, "chunks:");
+	WAVE_LOG(info, "chunks:");
 	for (auto& [name, chunk] : wave.list.sub_chunks)
 	{
-		LOG(info, "\t{}", chunk->get_name());
+		WAVE_LOG(info, "\t{}", chunk->get_name());
 	}
 
-	LOG(info, "tags:");
+	WAVE_LOG(info, "tags:");
 	for (auto& [name, frame] : wave.list.id3_chunk.tags)
 	{
-		LOG(info ,"\t{}", frame->get_name());
+		WAVE_LOG(info ,"\t{}", frame->get_name());
 	}
 
-	LOG(info, "length :{}", wave.get_length());
-	LOG(info, "num samples : {}", wave.get_num_samples_per_channel());
-	LOG(info, "buffer size : {}", wave.get_buffer_size());
+	WAVE_LOG(info, "length :{}", wave.get_length());
+	WAVE_LOG(info, "num samples : {}", wave.get_num_samples_per_channel());
+	WAVE_LOG(info, "buffer size : {}", wave.get_buffer_size());
 	
 	return 0;
 }

@@ -31,5 +31,5 @@ void id3_Frame_TXXX::process_data(FILE* f)
 
 void id3_Frame_TXXX::print()
 {
-	LOG(info ,"{} : {}",  Desciption.c_str(), Value.c_str());
+	WAVE_LOG(info ,"{} : {}",  Desciption.c_str(), Value.c_str());
 }

@@ -6,7 +6,7 @@
 WaveParser::WaveParser(const char* filename)
 {
     f = fopen(filename, "rb");
-    LOG(info, "parsing wave file {}", filename);
+    WAVE_LOG(info, "parsing wave file {}", filename);
 }
 
 WaveParser::~WaveParser()
@@ -33,7 +33,7 @@ wave_t WaveParser::parse()
         {
             case DATA_MARKER:
             {
-                LOG(info, "getting sound data...");
+                WAVE_LOG(info, "getting sound data...");
 
                 chunk_data_t data_chunk;
                 data_chunk.header = chunk_info;
@@ -76,14 +76,14 @@ void WaveParser::parse_header(wave_header_t* header)
 
     if (id != RIFF_TAG)
     {
-        LOG(error, "File is not RIFF");
+        WAVE_LOG(error, "File is not RIFF");
         return;
     }
 
 
     if (format != WAVE_TAG)
     {
-        LOG(error, "File is not WAVE");
+        WAVE_LOG(error, "File is not WAVE");
         return;
     }
 
@@ -93,12 +93,12 @@ void WaveParser::parse_fmt(fmt_chunk_t* fmt_chunck)
 {
     fread(fmt_chunck, sizeof(fmt_chunk_t), 1, f);
 
-    LOG(info, "format : {}",             fmt_chunck->audio_format);
-    LOG(info, "channels : {}",           fmt_chunck->num_channels);
-    LOG(info, "sample rate : {}",        fmt_chunck->sample_rate);
-    LOG(info, "byte rate : {}",          fmt_chunck->byte_rate);
-    LOG(info, "block align : {}",        fmt_chunck->block_align);
-    LOG(info, "bits per sample : {}",    fmt_chunck->bits_per_sample);
+    WAVE_LOG(info, "format : {}",             fmt_chunck->audio_format);
+    WAVE_LOG(info, "channels : {}",           fmt_chunck->num_channels);
+    WAVE_LOG(info, "sample rate : {}",        fmt_chunck->sample_rate);
+    WAVE_LOG(info, "byte rate : {}",          fmt_chunck->byte_rate);
+    WAVE_LOG(info, "block align : {}",        fmt_chunck->block_align);
+    WAVE_LOG(info, "bits per sample : {}",    fmt_chunck->bits_per_sample);
 
 }
 
@@ -138,14 +138,14 @@ void WaveParser::parse_list(list_chunk_t* list_chunk)
 
     if (id3_tag_pos > 0)
     {
-        LOG(info, "parsing id3 tags");
+        WAVE_LOG(info, "parsing id3 tags");
 
         fseek(f, id3_tag_pos, SEEK_SET);
 
         id3_t& id3 = list_chunk->id3_chunk;
         fread(&id3.header, sizeof(id3_header_t), 1, f);
        
-        LOG(info, "id3 version : {:d}", id3.header.version);
+        WAVE_LOG(info, "id3 version : {:d}", id3.header.version);
 
         parse_id3(&id3);
     }
@@ -166,7 +166,7 @@ void WaveParser::parse_id3(id3_t* id3)
         }
         else
         {
-            LOG(warn ,"no impl for {0:4} found!\n", tag.id);
+            WAVE_LOG(warn ,"no impl for {0:4} found!\n", tag.id);
         }
     }
 }

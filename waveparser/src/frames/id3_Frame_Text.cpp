@@ -27,5 +27,5 @@ unsigned id3_TextFrame_t::get_size()
 void id3_TextFrame_t::print()
 {
 	auto _size = get_size();
-	LOG(info, "{} : {}", get_name(), text.c_str());
+	WAVE_LOG(info, "{} : {}", get_name(), text.c_str());
 }
