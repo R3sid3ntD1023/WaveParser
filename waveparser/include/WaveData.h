@@ -66,6 +66,12 @@ struct id3_t
 {
 	id3_header_t header;
 	std::unordered_map<std::string, id3_frame_ptr> tags;
+
+	bool has_tag(const std::string& name) const { return tags.contains(name); }
+	id3_frame_ptr get_tag(const std::string& name) const { return has_tag(name) ? tags.at(name) : nullptr; }
+
+	template<typename T>
+	std::shared_ptr<T> get_tag(const std::string& name) const { return std::dynamic_pointer_cast<T>(get_tag(name)); }
 };
 
 struct list_chunk_t

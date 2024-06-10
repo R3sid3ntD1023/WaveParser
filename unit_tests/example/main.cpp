@@ -38,6 +38,8 @@ int main(int argv, char** argc)
 	WaveParser parser(RESOURCES_PATH"Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
 	auto wave = parser.parse();
 
+	wave.list.id3_chunk.get_tag("TIT2");
+
 	WAVE_LOG(info, "chunks:");
 	for (auto& [name, chunk] : wave.list.sub_chunks)
 	{
