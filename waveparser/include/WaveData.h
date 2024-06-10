@@ -81,6 +81,12 @@ struct wave_t
 		return data.header.size / bits_per_sample / fmt.num_channels; 
 	}
 
+	int get_num_samples() const
+	{
+		short bits_per_sample = fmt.bits_per_sample / 8;
+		return data.header.size / bits_per_sample;
+	}
+
 	short* get_samples() const { return (short*)data.data; }
 
 	float get_length() const { return (float)get_num_samples_per_channel() / (float)fmt.sample_rate; }
