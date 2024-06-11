@@ -27,8 +27,7 @@ bool WaveParser::parse(wave_t* wave)
     while (fread(&chunk_info, sizeof(chunk_info_t), 1, f) != 0)
     {
         chunk_val = utils::char_array_to_unsigned(chunk_info.id);
-       
-        WAVE_LOG(info, "Found chunk {} of size {}", chunk_info.id, chunk_info.size);
+     
         switch (chunk_val)
         {
             case DATA_MARKER:
@@ -115,7 +114,6 @@ void WaveParser::parse_list(list_chunk_t* list_chunk)
     chunk_info_t chunk_info;
     while (fread(&chunk_info, sizeof(chunk_info_t), 1, f) != 0)
     {
-        WAVE_LOG(info, "Found subchunk {} of size {}", chunk_info.id, chunk_info.size);
         unsigned chunk_val = utils::char_array_to_unsigned(chunk_info.id);
         switch (chunk_val)
         {

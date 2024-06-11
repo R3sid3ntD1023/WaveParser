@@ -35,7 +35,7 @@ int main(int argv, char** argc)
 {
 	Logger::SetCallback(LogCallback);
 
-	const char* filename = RESOURCES_PATH"40859__martypinso__projectorplay.wav";
+	const char* filename = RESOURCES_PATH"Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav";
 	if (argv > 1)
 	{
 		filename = argc[1];
