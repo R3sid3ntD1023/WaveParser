@@ -35,26 +35,40 @@ int main(int argv, char** argc)
 {
 	Logger::SetCallback(LogCallback);
 
-	WaveParser parser(RESOURCES_PATH"Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav");
-	auto wave = parser.parse();
-
-	wave.list.id3_chunk.get_tag("TIT2");
-
-	WAVE_LOG(info, "chunks:");
-	for (auto& [name, chunk] : wave.list.sub_chunks)
+	const char* filename = RESOURCES_PATH"40859__martypinso__projectorplay.wav";
+	if (argv > 1)
 	{
-		WAVE_LOG(info, "\t{}", chunk->get_name());
+		filename = argc[1];
 	}
 
-	WAVE_LOG(info, "tags:");
-	for (auto& [name, frame] : wave.list.id3_chunk.tags)
+	WaveParser parser(filename);
+
+	wave_t wave{};
+
+	if (parser.parse(&wave))
 	{
-		WAVE_LOG(info ,"\t{}", frame->get_name());
+		wave.list.id3_chunk.get_tag("TIT2");
+
+		WAVE_LOG(info, "chunks:");
+		for (auto& [name, chunk] : wave.list.sub_chunks)
+		{
+			WAVE_LOG(info, "\t{}", chunk->get_name());
+		}
+
+		WAVE_LOG(info, "tags:");
+		for (auto& [name, frame] : wave.list.id3_chunk.tags)
+		{
+			WAVE_LOG(info, "\t{}", frame->get_name());
+		}
+
+		WAVE_LOG(info, "length :{}", wave.get_length());
+		WAVE_LOG(info, "num samples : {}", wave.get_num_samples_per_channel());
+		WAVE_LOG(info, "buffer size : {}", wave.get_buffer_size());
+
 	}
 
-	WAVE_LOG(info, "length :{}", wave.get_length());
-	WAVE_LOG(info, "num samples : {}", wave.get_num_samples_per_channel());
-	WAVE_LOG(info, "buffer size : {}", wave.get_buffer_size());
+	
+	std::cin.get();
 	
 	return 0;
 }

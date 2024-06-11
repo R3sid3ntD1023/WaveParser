@@ -1,33 +1,29 @@
 #include "WaveData.h"
 
 
-chunk_t::chunk_t(int size)
+chunk_t::chunk_t(const chunk_info_t& info)
+	:header(info)
 {
-	header.size = size;
+	data = new byte[info.size];
 }
 
-chunk_data_t::chunk_data_t(const chunk_data_t& other)
+chunk_t::chunk_t(const chunk_t& other)
 {
+	header = other.header;
 	data = new byte[other.header.size];
 	memcpy(data, other.data, other.header.size);
 }
 
-chunk_data_t::chunk_data_t(int size)
-	:chunk_t(size)
+chunk_t::~chunk_t()
 {
-	data = new byte[size];
+	delete[] data;
 }
 
-chunk_data_t::~chunk_data_t()
+chunk_t& chunk_t::operator=(const chunk_t& rhs)
 {
-	if(data)
-		delete[] data;
-}
-
-chunk_data_t& chunk_data_t::operator=(const chunk_data_t& rhs)
-{
-	header.size = rhs.header.size;
+	header = rhs.header;
 	data = new byte[rhs.header.size];
 	memcpy(data, rhs.data, rhs.header.size);
 	return *this;
 }
+

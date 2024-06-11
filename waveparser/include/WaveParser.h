@@ -16,13 +16,14 @@ public:
 	WaveParser(const char* filename);
 	~WaveParser();
 
-	wave_t parse();
+	bool parse(wave_t* wave);
 
 private:
-	void parse_header(wave_header_t* header);
+	bool parse_header(wave_header_t* header);
 	void parse_fmt(fmt_chunk_t* fmt_chunck);
 	void parse_list(list_chunk_t* list_chunk);
 	void parse_id3(id3_t* id3);
+	void parse_chunk(chunk_t* chunk);
 
 private:
 	FILE* f;

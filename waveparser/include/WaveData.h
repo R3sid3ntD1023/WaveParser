@@ -13,28 +13,20 @@ struct chunk_info_t
 struct chunk_t
 {
 	chunk_t() = default;
-	chunk_t(int size);
-	virtual ~chunk_t() = default;
+	chunk_t(const chunk_info_t& info);
+	chunk_t(const chunk_t& other);
+	virtual ~chunk_t();
 
 	chunk_info_t header;
+	byte* data = nullptr;
 	
 	std::string get_name() const { return std::string(header.id, 4); }
-};
 
-struct chunk_data_t : public chunk_t
-{
-	byte* data = nullptr;
-
-	chunk_data_t() = default;
-	chunk_data_t(const chunk_data_t& other);
-	chunk_data_t(int size);
-	~chunk_data_t();
-
-	chunk_data_t& operator=(const chunk_data_t& rhs);
+	chunk_t& operator=(const chunk_t& rhs);
 };
 
 typedef std::shared_ptr<chunk_t> chunk_ptr;
-#define make_chunk(cls, ... ) std::make_shared<cls>(__VA_ARGS__)
+#define make_chunk(... ) std::make_shared<chunk_t>(__VA_ARGS__)
 
 struct fmt_chunk_t
 {
@@ -88,7 +80,8 @@ struct wave_t
 	wave_header_t header{};
 	fmt_chunk_t fmt{};
 	list_chunk_t list{};
-	chunk_data_t data{};
+	chunk_t data{};
+	std::vector<chunk_ptr> extrachunks{};
 
 	int get_num_samples_per_channel() const 
 	{
