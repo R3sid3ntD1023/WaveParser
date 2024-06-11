@@ -3,6 +3,7 @@
 #include "Core.h"
 #include "id3_Frames.h"
 #include "id3_Tag.h"
+#include "Buffer.h"
 
 struct chunk_info_t
 {
@@ -14,15 +15,11 @@ struct chunk_t
 {
 	chunk_t() = default;
 	chunk_t(const chunk_info_t& info);
-	chunk_t(const chunk_t& other);
-	virtual ~chunk_t();
 
 	chunk_info_t header;
-	byte* data = nullptr;
+	Buffer data;
 	
 	std::string get_name() const { return std::string(header.id, 4); }
-
-	chunk_t& operator=(const chunk_t& rhs);
 };
 
 typedef std::shared_ptr<chunk_t> chunk_ptr;
@@ -95,7 +92,7 @@ struct wave_t
 		return data.header.size / bits_per_sample;
 	}
 
-	short* get_samples() const { return (short*)data.data; }
+	short* get_samples() const { return data.data.as<short>(); }
 
 	float get_length() const { return (float)get_num_samples_per_channel() / (float)fmt.sample_rate; }
 
