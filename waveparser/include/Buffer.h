@@ -51,4 +51,16 @@ struct Buffer
 	}
 
 	operator byte* () { return data; }
+
+
+	Buffer& operator=(const Buffer& rhs)
+	{
+		if (rhs.size && rhs.data)
+		{
+			Allocate(rhs.size);
+			memcpy_s(data, size, rhs.data, rhs.size);
+		}
+
+		return *this;
+	}
 };
