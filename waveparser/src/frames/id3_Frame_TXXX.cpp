@@ -21,7 +21,7 @@ void id3_Frame_TXXX::process_data(FILE* f)
 
 	std::string text;
 	text.resize(descriptionSize);
-	fread(&text[0], sizeof(uint8_t), descriptionSize, f);
+	fread(&text[0], sizeof(byte), descriptionSize, f);
 
 	auto delimiter = '\0';
 	size_t pos = text.find(delimiter);

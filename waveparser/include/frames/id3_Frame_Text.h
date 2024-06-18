@@ -3,7 +3,7 @@
 
 #define TXXX 0x54585858
 
-enum text_encoding : uint8_t
+enum text_encoding : byte
 {
 	ISO_8859_1,
 	ISO_IEC_10646_1_1993, //unicode,
@@ -13,7 +13,7 @@ enum text_encoding : uint8_t
 
 struct Frame_IMPL
 {
-	uint8_t size[4];
+	byte size[4];
 	id3_Frame_t::e_frame_flags flags[2];
 	text_encoding encoding;
 };

@@ -2,13 +2,12 @@
 
 #include "Core.h"
 
-
 typedef unsigned long long buffer_size;
 
 struct Buffer
 {
 	buffer_size size = 0;
-	uint8_t* data = nullptr;
+	byte* data = nullptr;
 
 	Buffer() = default;
 	Buffer(const Buffer& other)
@@ -35,7 +34,7 @@ struct Buffer
 		Release();
 
 		this->size = size;
-		data = new uint8_t[size + 1];
+		data = new byte[size + 1];
 		data[size] = 0;
 	}
 
@@ -51,7 +50,7 @@ struct Buffer
 		return (T*)data;
 	}
 
-	operator uint8_t* () { return data; }
+	operator byte* () { return data; }
 
 
 	Buffer& operator=(const Buffer& rhs)
