@@ -174,6 +174,6 @@ void WaveParser::parse_chunk(chunk_t* chunk)
 
     if (chunk->header.size)
     {
-        fread(chunk->data.data, sizeof(byte), chunk->header.size, f);
+        fread(chunk->data.data, sizeof(uint8_t), chunk->header.size, f);
     }
 }

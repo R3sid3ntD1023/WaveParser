@@ -3,7 +3,7 @@
 
 struct id3_tag_t
 {
-	byte id[4];
+	uint8_t id[4];
 
 	bool operator==(const id3_tag_t& rhs) const { return strcmp(id, rhs.id); }
 	bool operator!=(const id3_tag_t& rhs) const { return !(*this == rhs); }

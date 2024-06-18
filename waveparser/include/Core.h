@@ -5,7 +5,6 @@
 #include <string>
 #include <algorithm>
 #include <memory>
-
-typedef char byte;
+#include <stdint.h>
 
 #include "WaveLogger.h"
