@@ -46,8 +46,8 @@ struct wave_header_t
 struct id3_header_t
 {
 	char identifier[3];
-	byte version;
-	byte flags[6];
+	byte_t version;
+	byte_t flags[6];
 	
 };
 

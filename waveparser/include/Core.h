@@ -6,6 +6,6 @@
 #include <algorithm>
 #include <memory>
 
-typedef char byte;
+typedef char byte_t;
 
 #include "WaveLogger.h"

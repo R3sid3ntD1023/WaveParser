@@ -5,7 +5,7 @@
 
 
 
-enum id3_flag : byte
+enum id3_flag : byte_t
 {
 	Unsynchronisation = 0,
 	ExtentedHeader = 1,
@@ -15,7 +15,7 @@ enum id3_flag : byte
 
 struct id3_Frame_t
 {
-	enum e_frame_flags : byte
+	enum e_frame_flags : byte_t
 	{
 		TagAlterPreservation = 0,
 		FileAlterPreservation,

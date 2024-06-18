@@ -7,7 +7,7 @@ typedef unsigned long long buffer_size;
 struct Buffer
 {
 	buffer_size size = 0;
-	byte* data = nullptr;
+	byte_t* data = nullptr;
 
 	Buffer() = default;
 	Buffer(const Buffer& other)
@@ -34,7 +34,7 @@ struct Buffer
 		Release();
 
 		this->size = size;
-		data = new byte[size + 1];
+		data = new byte_t[size + 1];
 		data[size] = 0;
 	}
 
@@ -50,7 +50,7 @@ struct Buffer
 		return (T*)data;
 	}
 
-	operator byte* () { return data; }
+	operator byte_t* () { return data; }
 
 
 	Buffer& operator=(const Buffer& rhs)
