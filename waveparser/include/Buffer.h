@@ -6,16 +6,16 @@ typedef unsigned long long buffer_size;
 
 struct Buffer
 {
-	buffer_size size = 0;
-	byte_t* data = nullptr;
+	buffer_size Size = 0;
+	byte_t* Data = nullptr;
 
 	Buffer() = default;
 	Buffer(const Buffer& other)
 	{
-		if (other.size && other.data)
+		if (other.Size && other.Data)
 		{
-			Allocate(other.size);
-			memcpy_s(data, size, other.data, other.size);
+			Allocate(other.Size);
+			memcpy_s(Data, Size, other.Data, other.Size);
 		}
 	}
 
@@ -26,39 +26,39 @@ struct Buffer
 
 	~Buffer()
 	{
-		if (data) Release();
+		if (Data) Release();
 	}
 
 	void Allocate(buffer_size size)
 	{
 		Release();
 
-		this->size = size;
-		data = new byte_t[size + 1];
-		data[size] = 0;
+		this->Size = size;
+		Data = new byte_t[size + 1];
+		Data[size] = 0;
 	}
 
 	void Release()
 	{
-		size = 0;
-		delete[] data;
+		Size = 0;
+		delete[] Data;
 	}
 
 	template<typename T>
 	T* as() const
 	{
-		return (T*)data;
+		return (T*)Data;
 	}
 
-	operator byte_t* () { return data; }
+	operator byte_t* () { return Data; }
 
 
 	Buffer& operator=(const Buffer& rhs)
 	{
-		if (rhs.size && rhs.data)
+		if (rhs.Size && rhs.Data)
 		{
-			Allocate(rhs.size);
-			memcpy_s(data, size, rhs.data, rhs.size);
+			Allocate(rhs.Size);
+			memcpy_s(Data, Size, rhs.Data, rhs.Size);
 		}
 
 		return *this;
