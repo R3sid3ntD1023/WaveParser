@@ -39,5 +39,5 @@ inline void Logger::Log(LogLevel level, const char* message, const Args & ...arg
 /*levels - info, trace, warn, error*/
 #define WAVE_LOG(level, ...) Logger::Log(Logger::LogLevel::level, __VA_ARGS__)
 #else
-#define LOG(level, ...)
+#define WAVE_LOG(level, ...)
 #endif
