@@ -16,7 +16,7 @@ project "waveparser"
 	
 	includedirs
 	{
-		"waveparser/include/**.h"
+		"waveparser/include"
 	}
 	
 	filter "configurations:Debug"
