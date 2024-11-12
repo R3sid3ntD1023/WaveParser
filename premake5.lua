@@ -10,7 +10,8 @@ project "waveparser"
 	
 	files
 	{
-		"waveparser/src/**.cpp"
+		"waveparser/src/**.cpp",
+		"waveparser/include/**.h"
 	}
 	
 	includedirs
