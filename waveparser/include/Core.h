@@ -5,6 +5,8 @@
 #include <string>
 #include <algorithm>
 #include <memory>
+#include <fstream>
+#include <iostream>
 
 typedef char byte_t;
 

@@ -1,43 +1,21 @@
 #include "id3_FrameHandler.h"
-#include "id3_Frames.h"
+#include "frames/id3_Frame_TDRC.h"
+#include "frames/id3_Frame_COMM.h"
+#include "frames/id3_Frame_TXXX.h"
+#include "frames/id3_Frame_TIT2.h"
+#include "frames/id3_Frame_TPE1.h"
 
-#define make_frame(cls) std::make_shared<cls>();
+#define TPE1 0x54504531
+#define TIT2 0x54495432
+#define TDRC 0x54445243
+#define COMM 0x434F4D4D
+#define TXXX 0x54585858
 
-id3_frame_ptr id3_FrameHandler::process(FILE* file, unsigned tag_id)
+id3_registry::id3_registry()
 {
-	id3_frame_ptr frame = nullptr;
-	switch (tag_id)
-	{
-	case COMM:
-	{
-		frame = make_frame(id3_Frame_COMM);
-		break;
-	}
-	case TIT2:
-	{
-		frame = make_frame(id3_Frame_TIT2);
-		break;
-	}
-	case TDRC:
-	{
-		frame = make_frame(id3_Frame_TDRC);
-		break;
-	}
-	case TXXX:
-	{
-		frame = make_frame(id3_Frame_TXXX);
-		break;
-	}
-	case TPE1:
-	{
-		frame = make_frame(id3_Frame_TPE1);
-		break;
-	}
-	default:
-		break;
-	}
-
-	if(frame) frame->process_data(file);
-
-	return std::move(frame);
+	register_id3_tag<id3_Frame_COMM>(COMM);
+	register_id3_tag<id3_Frame_TDRC>(TDRC);
+	register_id3_tag<id3_Frame_TIT2>(TIT2);
+	register_id3_tag<id3_Frame_TPE1>(TPE1);
+	register_id3_tag<id3_Frame_TXXX>(TXXX);
 }
