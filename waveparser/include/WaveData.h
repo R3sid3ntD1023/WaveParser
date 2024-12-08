@@ -3,7 +3,6 @@
 #include "Core.h"
 #include "id3_Frame.h"
 #include "id3_Tag.h"
-#include "Buffer.h"
 
 namespace WAVE
 {
@@ -53,10 +52,10 @@ namespace WAVE
 
 	struct id3_header_t
 	{
-		byte_t identifier[3];
-		byte_t version[2];
-		id3_flag flags;
-		byte_t size[4];
+		byte_t identifier[3]; /*ID3v2/file header 	ID3*/
+		byte_t version[2];	  /*ID3v2 version 		$03 00*/
+		id3_flag flags;		  /*ID3v2 flags 		%abc00000*/
+		byte_t size[4];		  /*ID3v2 size			4 * %0xxxxxxxx*/
 	};
 
 	struct id3_extended_header_t

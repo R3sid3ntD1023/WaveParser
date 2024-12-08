@@ -9,6 +9,8 @@ namespace WAVE
 
 		bool operator==(const id3_tag_t &rhs) const { return strcmp(id, rhs.id); }
 		bool operator!=(const id3_tag_t &rhs) const { return !(*this == rhs); }
+
+		operator std::string() const { return std::string(id, 4); }
 	};
 
 }
@@ -20,10 +22,7 @@ namespace std
 	{
 		size_t operator()(const WAVE::id3_tag_t &tag) const
 		{
-			char str[sizeof(byte_t) * 4 + 1];
-			str[4] = '\0';
-			memcpy(str, tag.id, 4);
-			return hash<string>()(str);
+			return hash<string>()(tag);
 		}
 	};
 }

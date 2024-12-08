@@ -1,9 +1,9 @@
 #include "id3_FrameHandler.h"
-#include "frames/id3_Frame_TDRC.h"
-#include "frames/id3_Frame_COMM.h"
-#include "frames/id3_Frame_TXXX.h"
-#include "frames/id3_Frame_TIT2.h"
-#include "frames/id3_Frame_TPE1.h"
+#include "frames/v23/id3_Frame_TDRC.h"
+#include "frames/v23/id3_Frame_COMM.h"
+#include "frames/v23/id3_Frame_TXXX.h"
+#include "frames/v23/id3_Frame_TIT2.h"
+#include "frames/v23/id3_Frame_TPE1.h"
 
 #define TPE1 0x54504531
 #define TIT2 0x54495432
@@ -15,10 +15,12 @@ namespace WAVE
 {
 	id3_registry::id3_registry()
 	{
-		register_id3_tag<id3_Frame_COMM>(COMM);
-		register_id3_tag<id3_Frame_TDRC>(TDRC);
-		register_id3_tag<id3_Frame_TIT2>(TIT2);
-		register_id3_tag<id3_Frame_TPE1>(TPE1);
-		register_id3_tag<id3_Frame_TXXX>(TXXX);
+		Version v23(2, 3, 0);
+
+		register_id3_tag<id3_Frame_COMM>(v23, COMM);
+		register_id3_tag<id3_Frame_TDRC>(v23, TDRC);
+		register_id3_tag<id3_Frame_TIT2>(v23, TIT2);
+		register_id3_tag<id3_Frame_TPE1>(v23, TPE1);
+		register_id3_tag<id3_Frame_TXXX>(v23, TXXX);
 	}
 }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core.h"
-#include "Utils.h"
 
 namespace WAVE
 {
@@ -30,9 +29,13 @@ namespace WAVE
 		e_frame_flags flag;
 
 		virtual ~id3_Frame_t() = default;
+
 		virtual void process_data(std::ifstream &stream) = 0;
+
 		virtual std::string get_name() const = 0;
+
 		virtual std::string get_description() const = 0;
+
 		virtual std::string to_string() const = 0;
 	};
 

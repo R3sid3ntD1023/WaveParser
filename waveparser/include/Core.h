@@ -10,4 +10,4 @@
 
 typedef char byte_t;
 
-#include "WaveLogger.h"
+#include "logger/WaveLogger.h"

@@ -1,6 +1,7 @@
 #include "WaveParser.h"
-#include "Utils.h"
+#include "utility/Utils.h"
 #include "id3_FrameHandler.h"
+#include "Version.h"
 
 namespace WAVE
 {
@@ -112,10 +113,11 @@ namespace WAVE
                 id3_t &id3 = list_chunk.id3_chunk;
                 stream.read((char *)&id3.header, sizeof(id3_header_t));
 
-                WAVE_LOG(info, "id3 version : {}", std::string(id3.header.version, 2).c_str());
+                Version version(2, id3.header.version[0], id3.header.version[1]);
+                WAVE_LOG(info, "id3 version : {}", version.to_string());
                 WAVE_LOG(info, "id3 flags : {}", (unsigned)id3.header.flags);
 
-                parse_id3(id3);
+                parse_id3(id3, version);
                 break;
             }
             default:
@@ -129,7 +131,7 @@ namespace WAVE
         }
     }
 
-    void Parser::parse_id3(id3_t &id3)
+    void Parser::parse_id3(id3_t &id3, const Version &version)
     {
         id3_tag_t tag;
         while (stream.read((char *)&tag, sizeof(id3_tag_t)))
@@ -138,7 +140,7 @@ namespace WAVE
 
             WAVE_LOG(info, "Frame {}", std::string(tag.id, 4));
 
-            auto frame = id3_registry::get().get_id3_tag(id_val);
+            auto frame = id3_registry::get().get_id3_tag(version, id_val);
 
             if (frame)
             {

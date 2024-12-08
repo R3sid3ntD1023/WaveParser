@@ -1,7 +1,7 @@
 #pragma once
 
 #include "WaveData.h"
-#include <iostream>
+#include "Version.h"
 
 #define DATA_MARKER 0x64617461
 #define LIST_MARKER 0x4C495354
@@ -24,7 +24,7 @@ namespace WAVE
 		bool parse_header(wave_header_t &header);
 		void parse_fmt(fmt_chunk_t &fmt_chunck);
 		void parse_list(list_chunk_t &list_chunk);
-		void parse_id3(id3_t &id3);
+		void parse_id3(id3_t &id3, const Version &version);
 		void parse_chunk(chunk_t &chunk);
 
 	private:

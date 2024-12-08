@@ -2,6 +2,7 @@
 
 #include "Core.h"
 #include "id3_Frame.h"
+#include "Version.h"
 
 namespace WAVE
 {
@@ -12,18 +13,18 @@ namespace WAVE
 		id3_registry();
 
 		template <typename T>
-		void register_id3_tag(unsigned id)
+		void register_id3_tag(const Version &version, unsigned id)
 		{
-			if (_registered_id3_tags.contains(id))
+			if (_registered_id3_tags[version].contains(id))
 				return;
 
-			_registered_id3_tags.emplace(id, std::make_shared<T>());
+			_registered_id3_tags[version].emplace(id, std::make_shared<T>());
 		}
 
-		id3_frame_ptr get_id3_tag(unsigned id)
+		id3_frame_ptr get_id3_tag(const Version &version, unsigned id)
 		{
-			if (_registered_id3_tags.contains(id))
-				return _registered_id3_tags.at(id);
+			if (_registered_id3_tags[version].contains(id))
+				return _registered_id3_tags[version].at(id);
 
 			return nullptr;
 		}
@@ -35,6 +36,6 @@ namespace WAVE
 		}
 
 	private:
-		std::unordered_map<unsigned, id3_frame_ptr> _registered_id3_tags;
+		std::unordered_map<Version, std::unordered_map<unsigned, id3_frame_ptr>> _registered_id3_tags;
 	};
 }
