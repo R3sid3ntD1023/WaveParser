@@ -31,8 +31,8 @@ namespace WAVE
             {
                 WAVE_LOG(info, "getting sound data...");
 
-                chunk_t chunk = chunk_t(chunk_info);
-                parse_chunk(chunk);
+                auto chunk = std::make_shared<chunk_t>(chunk_info);
+                parse_chunk(*chunk);
                 wave.data = chunk;
                 break;
             }

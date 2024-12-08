@@ -97,22 +97,22 @@ namespace WAVE
 		wave_header_t header;
 		fmt_chunk_t fmt;
 		list_chunk_t list;
-		chunk_t data;
+		std::shared_ptr<chunk_t> data;
 		std::vector<std::shared_ptr<chunk_t>> extrachunks;
 
 		unsigned get_num_samples_per_channel() const
 		{
 			short bits_per_sample = fmt.bits_per_sample / 8;
-			return data.header.size / bits_per_sample / fmt.num_channels;
+			return data->header.size / bits_per_sample / fmt.num_channels;
 		}
 
 		unsigned get_num_samples() const
 		{
 			short bits_per_sample = fmt.bits_per_sample / 8;
-			return data.header.size / bits_per_sample;
+			return data->header.size / bits_per_sample;
 		}
 
-		short *get_samples() const { return reinterpret_cast<short *>(data.data); }
+		short *get_samples() const { return (short *)(data->data); }
 
 		float get_length() const { return (float)get_num_samples_per_channel() / (float)fmt.sample_rate; }
 
