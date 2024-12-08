@@ -2,173 +2,163 @@
 #include "Utils.h"
 #include "id3_FrameHandler.h"
 
-WaveParser::WaveParser(const char *filename)
+namespace WAVE
 {
-    f = fopen(filename, "rb");
-    WAVE_LOG(info, "parsing wave file {}", filename);
-}
-
-WaveParser::~WaveParser()
-{
-    fclose(f);
-}
-
-bool WaveParser::parse(wave_t *wave)
-{
-    if (!wave || !parse_header(&wave->header))
+    Parser::Parser(const char *filename)
     {
-        return false;
+        stream = std::ifstream(filename, std::ios::binary | std::ios::in);
+        WAVE_LOG(info, "parsing wave file {}", filename);
     }
 
-    chunk_info_t chunk_info;
-    unsigned chunk_val = 0;
-
-    while (fread(&chunk_info, sizeof(chunk_info_t), 1, f) != 0)
+    bool Parser::parse(wave_t &wave)
     {
-        chunk_val = utils::char_array_to_unsigned(chunk_info.id);
-
-        switch (chunk_val)
+        if (!parse_header(wave.header))
         {
-        case DATA_MARKER:
+            return false;
+        }
+
+        chunk_info_t chunk_info;
+        unsigned chunk_val = 0;
+
+        while (stream.read((char *)&chunk_info, sizeof(chunk_info_t)))
         {
-            WAVE_LOG(info, "getting sound data...");
+            chunk_val = utils::char_array_to_unsigned(chunk_info.id);
 
-            chunk_t chunk = chunk_t(chunk_info);
-            parse_chunk(&chunk);
-            wave->data = chunk;
-            break;
-        }
-        case LIST_MARKER:
-        {
-            list_chunk_t list;
-            fread(&list.type, sizeof(char), 4, f);
-            parse_list(&list);
+            switch (chunk_val)
+            {
+            case DATA_MARKER:
+            {
+                WAVE_LOG(info, "getting sound data...");
 
-            wave->list = list;
-            break;
-        }
-        case FMT_MARKER:
-        {
+                chunk_t chunk = chunk_t(chunk_info);
+                parse_chunk(chunk);
+                wave.data = chunk;
+                break;
+            }
+            case LIST_MARKER:
+            {
+                list_chunk_t list;
+                stream.read(list.type, 4);
+                parse_list(list);
 
-            parse_fmt(&wave->fmt);
-            break;
-        }
-        default:
-        {
-            chunk_ptr chunk = make_chunk(chunk_info);
-            parse_chunk(chunk.get());
-            wave->extrachunks.push_back(chunk);
-            break;
-        }
-        }
-    };
+                wave.list = list;
+                break;
+            }
+            case FMT_MARKER:
+            {
 
-    return false;
-}
+                parse_fmt(wave.fmt);
+                break;
+            }
+            default:
+            {
+                auto chunk = std::make_shared<chunk_t>(chunk_info);
+                parse_chunk(*chunk);
+                wave.extrachunks.push_back(chunk);
+                break;
+            }
+            }
+        };
 
-bool WaveParser::parse_header(wave_header_t *header)
-{
-    fread(header, sizeof(wave_header_t), 1, f);
-
-    auto id = utils::char_array_to_unsigned(header->id);
-    auto format = utils::char_array_to_unsigned(header->format);
-
-    if (id != RIFF_TAG)
-    {
-        WAVE_LOG(error, "File is not RIFF");
-        return false;
+        return true;
     }
 
-    if (format != WAVE_TAG)
+    bool Parser::parse_header(wave_header_t &header)
     {
-        WAVE_LOG(error, "File is not WAVE");
-        return false;
+        stream.read((char *)&header, sizeof(wave_header_t));
+
+        auto id = utils::char_array_to_unsigned(header.id);
+        auto format = utils::char_array_to_unsigned(header.format);
+
+        if (id != RIFF_TAG)
+        {
+            WAVE_LOG(error, "File is not RIFF");
+            return false;
+        }
+
+        if (format != WAVE_TAG)
+        {
+            WAVE_LOG(error, "File is not WAVE");
+            return false;
+        }
+
+        return true;
     }
 
-    return true;
-}
-
-void WaveParser::parse_fmt(fmt_chunk_t *fmt_chunck)
-{
-    fread(fmt_chunck, sizeof(fmt_chunk_t), 1, f);
-
-    WAVE_LOG(info, "format : {}", fmt_chunck->audio_format);
-    WAVE_LOG(info, "channels : {}", fmt_chunck->num_channels);
-    WAVE_LOG(info, "sample rate : {}", fmt_chunck->sample_rate);
-    WAVE_LOG(info, "byte rate : {}", fmt_chunck->byte_rate);
-    WAVE_LOG(info, "block align : {}", fmt_chunck->block_align);
-    WAVE_LOG(info, "bits per sample : {}", fmt_chunck->bits_per_sample);
-}
-
-void WaveParser::parse_list(list_chunk_t *list_chunk)
-{
-    long id3_tag_pos = 0;
-
-    chunk_info_t chunk_info;
-    while (fread(&chunk_info, sizeof(chunk_info_t), 1, f) != 0)
+    void Parser::parse_fmt(fmt_chunk_t &fmt_chunck)
     {
-        unsigned chunk_val = utils::char_array_to_unsigned(chunk_info.id);
-        switch (chunk_val)
+        stream.read((char *)&fmt_chunck, sizeof(fmt_chunk_t));
+
+        WAVE_LOG(info, "format : {}", fmt_chunck.audio_format);
+        WAVE_LOG(info, "channels : {}", fmt_chunck.num_channels);
+        WAVE_LOG(info, "sample rate : {}", fmt_chunck.sample_rate);
+        WAVE_LOG(info, "byte rate : {}", fmt_chunck.byte_rate);
+        WAVE_LOG(info, "block align : {}", fmt_chunck.block_align);
+        WAVE_LOG(info, "bits per sample : {}", fmt_chunck.bits_per_sample);
+    }
+
+    void Parser::parse_list(list_chunk_t &list_chunk)
+    {
+        chunk_info_t chunk_info;
+        while (stream.read((char *)&chunk_info, sizeof(chunk_info_t)))
         {
-        case ID3_MARKER:
-        {
-            id3_tag_pos = ftell(f);
-            fseek(f, chunk_info.size, SEEK_CUR);
-            break;
-        }
-        default:
-        {
-            chunk_ptr &subchunk = list_chunk->sub_chunks[chunk_val];
-            subchunk = make_chunk(chunk_info);
-            parse_chunk(subchunk.get());
-            break;
-        }
+            unsigned chunk_val = utils::char_array_to_unsigned(chunk_info.id);
+            WAVE_LOG(info, "Chunk {} : {}", std::string(chunk_info.id, 4), chunk_info.size);
+
+            switch (chunk_val)
+            {
+            case ID3_MARKER:
+            {
+                id3_t &id3 = list_chunk.id3_chunk;
+                stream.read((char *)&id3.header, sizeof(id3_header_t));
+
+                WAVE_LOG(info, "id3 version : {}", std::string(id3.header.version, 2).c_str());
+                WAVE_LOG(info, "id3 flags : {}", (unsigned)id3.header.flags);
+
+                parse_id3(id3);
+                break;
+            }
+            default:
+            {
+                auto chunk = std::make_shared<chunk_t>(chunk_info);
+                parse_chunk(*chunk);
+                list_chunk.sub_chunks.push_back(chunk);
+                break;
+            }
+            }
         }
     }
 
-    if (id3_tag_pos > 0)
+    void Parser::parse_id3(id3_t &id3)
     {
-        WAVE_LOG(info, "parsing id3 tags");
-
-        fseek(f, id3_tag_pos, SEEK_SET);
-
-        id3_t &id3 = list_chunk->id3_chunk;
-        fread(&id3.header, sizeof(id3_header_t), 1, f);
-
-        WAVE_LOG(info, "id3 version : {:d}", id3.header.version);
-
-        parse_id3(&id3);
-    }
-}
-
-void WaveParser::parse_id3(id3_t *id3)
-{
-    id3_tag_t tag;
-    while (fread(&tag, sizeof(id3_tag_t), 1, f) != 0)
-    {
-        unsigned id_val = utils::byte_array_to_unsigned(tag.id);
-        auto frame = id3_registry::get().get_id3_tag(id_val);
-
-        if (frame)
+        id3_tag_t tag;
+        while (stream.read((char *)&tag, sizeof(id3_tag_t)))
         {
-            frame->process_data(f);
-            id3->tags[frame->get_name()] = frame;
-            frame->print();
-        }
-        else
-        {
-            WAVE_LOG(warn, "no impl for {0:4} found!\n", tag.id);
+            unsigned id_val = utils::byte_array_to_unsigned(tag.id);
+
+            WAVE_LOG(info, "Frame {}", std::string(tag.id, 4));
+
+            auto frame = id3_registry::get().get_id3_tag(id_val);
+
+            if (frame)
+            {
+                frame->process_data(stream);
+                id3.tags[frame->get_name()] = frame;
+            }
+            else
+            {
+                WAVE_LOG(warn, "no impl for {0:4} found!\n", tag.id);
+            }
         }
     }
-}
 
-void WaveParser::parse_chunk(chunk_t *chunk)
-{
-    if (!chunk)
-        return;
-
-    if (chunk->header.size)
+    void Parser::parse_chunk(chunk_t &chunk)
     {
-        fread(chunk->data.Data, sizeof(byte_t), chunk->header.size, f);
+        auto size = chunk.header.size;
+        if (size)
+        {
+            chunk.data = new byte_t[size + 1];
+            stream.read(chunk.data, size);
+        }
     }
 }

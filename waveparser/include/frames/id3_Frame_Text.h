@@ -1,31 +1,34 @@
 #pragma once
+
 #include "id3_Frame.h"
 
-#define TXXX 0x54585858
-
-enum text_encoding : byte_t
+namespace WAVE
 {
-	ISO_8859_1,
-	ISO_IEC_10646_1_1993, //unicode,
-	UTF_16BE,
-	UTF_8
-};
 
-struct Frame_IMPL
-{
-	byte_t size[4];
-	id3_Frame_t::e_frame_flags flags[2];
-	text_encoding encoding;
-};
+	enum text_encoding : byte_t
+	{
+		ISO_8859_1,
+		ISO_IEC_10646_1_1993, // unicode,
+		UTF_16BE,
+		UTF_8
+	};
 
-struct id3_TextFrame_t : public id3_Frame_t
-{
-	Frame_IMPL Impl;
-	std::string text;
+	struct Frame_IMPL
+	{
+		byte_t size[4];
+		id3_Frame_t::e_frame_flags flags[2];
+		text_encoding encoding;
+	};
 
-	void process_data(FILE* f);
+	struct id3_TextFrame_t : public id3_Frame_t
+	{
+		Frame_IMPL Impl;
+		std::string text;
 
-	unsigned get_size();
+		void process_data(std::ifstream &stream);
 
-	virtual void print();
-};
+		unsigned get_size();
+
+		virtual std::string to_string() const { return text; }
+	};
+}

@@ -1,36 +1,40 @@
 #pragma once
 
 #include "Core.h"
-#include "frames/id3_Frame.h"
+#include "id3_Frame.h"
 
-class id3_registry
+namespace WAVE
 {
-public:
-	id3_registry();
 
-	template <typename T>
-	void register_id3_tag(unsigned id)
+	class id3_registry
 	{
-		if (_registered_id3_tags.contains(id))
-			return;
+	public:
+		id3_registry();
 
-		_registered_id3_tags.emplace(id, std::make_shared<T>());
-	}
+		template <typename T>
+		void register_id3_tag(unsigned id)
+		{
+			if (_registered_id3_tags.contains(id))
+				return;
 
-	id3_frame_ptr get_id3_tag(unsigned id)
-	{
-		if (_registered_id3_tags.contains(id))
-			return _registered_id3_tags.at(id);
+			_registered_id3_tags.emplace(id, std::make_shared<T>());
+		}
 
-		return nullptr;
-	}
+		id3_frame_ptr get_id3_tag(unsigned id)
+		{
+			if (_registered_id3_tags.contains(id))
+				return _registered_id3_tags.at(id);
 
-	static id3_registry &get()
-	{
-		static id3_registry registry;
-		return registry;
-	}
+			return nullptr;
+		}
 
-private:
-	std::unordered_map<unsigned, id3_frame_ptr> _registered_id3_tags;
-};
+		static id3_registry &get()
+		{
+			static id3_registry registry;
+			return registry;
+		}
+
+	private:
+		std::unordered_map<unsigned, id3_frame_ptr> _registered_id3_tags;
+	};
+}

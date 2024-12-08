@@ -1,20 +1,24 @@
 #pragma once
 #include "Core.h"
 
-struct id3_tag_t
+namespace WAVE
 {
-	byte_t id[4];
+	struct id3_tag_t
+	{
+		byte_t id[4];
 
-	bool operator==(const id3_tag_t& rhs) const { return strcmp(id, rhs.id); }
-	bool operator!=(const id3_tag_t& rhs) const { return !(*this == rhs); }
-};
+		bool operator==(const id3_tag_t &rhs) const { return strcmp(id, rhs.id); }
+		bool operator!=(const id3_tag_t &rhs) const { return !(*this == rhs); }
+	};
+
+}
 
 namespace std
 {
-	template<>
-	struct hash<id3_tag_t>
+	template <>
+	struct hash<WAVE::id3_tag_t>
 	{
-		size_t operator()(const id3_tag_t& tag) const
+		size_t operator()(const WAVE::id3_tag_t &tag) const
 		{
 			char str[sizeof(byte_t) * 4 + 1];
 			str[4] = '\0';
@@ -23,4 +27,3 @@ namespace std
 		}
 	};
 }
-
