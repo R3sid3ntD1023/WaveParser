@@ -112,7 +112,7 @@ namespace WAVE
 			return data.header.size / bits_per_sample;
 		}
 
-		short *get_samples() const { return (short *)data.data; }
+		short *get_samples() const { return reinterpret_cast<short *>(data.data); }
 
 		float get_length() const { return (float)get_num_samples_per_channel() / (float)fmt.sample_rate; }
 
