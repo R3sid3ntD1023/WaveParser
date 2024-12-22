@@ -39,11 +39,14 @@ int main(int argv, char **argc)
 {
 	WAVE::Logger::SetCallback(WAVE::LogCallback);
 
-	const char *filename = RESOURCES_PATH "/Resident Evil 5 - 'Rust in Summer 2008' (Versus Mode - Slayers).wav";
+	const char *filename = nullptr;
 	if (argv > 1)
 	{
 		filename = argc[1];
 	}
+
+	if (!filename)
+		return 0;
 
 	WAVE::Parser parser(filename);
 

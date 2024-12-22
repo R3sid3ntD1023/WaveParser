@@ -15,11 +15,10 @@ foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
 
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-option(BUILD_TESTS "Build Tests" On)
+option(BUILD_TESTS "Build Tests" OFF)
 
-add_subdirectory("waveparser")
+add_subdirectory(WAVEParser)
 
 if(BUILD_TESTS)
-add_subdirectory("unit_tests")
+add_subdirectory(unit_tests)
 endif()
