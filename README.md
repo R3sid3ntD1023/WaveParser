@@ -1,5 +1,9 @@
 #Features
-wave file paser that also parses id3 tags
+wave file parser that supports version 2.3 id3 tags
 
-#Supported Tags
-<li></li>
+#Supported Tags currently:
+<li>COMM</li>
+<li>TDRC</li>
+<li>TIT2</li>
+<li>TPE1</li>
+<li>TXXX</li>
