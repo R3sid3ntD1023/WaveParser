@@ -1,9 +1,4 @@
-cmake_minimum_required( VERSION 3.8)
-
-if(MSCV)
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDebug$<$<CONFIG:Debug>:Debug>")
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>")
-endif()	
+cmake_minimum_required( VERSION 3.5...3.10)
 
 project(WAVEParser VERSION 1.0 LANGUAGES CXX)
 
