@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.5...3.10)
+cmake_minimum_required( VERSION 3.5...4.0)
 
 project(WAVEParser VERSION 1.0 LANGUAGES CXX)
 
