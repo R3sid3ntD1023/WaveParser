@@ -1,9 +1,12 @@
-file(GLOB_RECURSE WAVE_SRC CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/**.cpp)
-add_library(waveparser ${WAVE_SRC})
-set_target_properties(
-	waveparser PROPERTIES
-	CXX_STANDARD 20
-)
-target_include_directories(waveparser PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+cmake_minimum_required( VERSION 3.5...4.0 )
+
+file(GLOB_RECURSE WAVE_SOURCES CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/**.cpp)
+file(GLOB_RECURSE WAVE_HEADERS CMAKE_CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/**.h)
+add_library(waveparser ${WAVE_SOURCES} ${WAVE_HEADERS})
+
+set(TARGET_NAME waveparser)
+
+set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 20 CXX_STANDARD_REQUIRED ON)
+target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 

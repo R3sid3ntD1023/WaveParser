@@ -1,41 +1,46 @@
 #pragma once
 
 #include "Core.h"
-#include "id3_Frame.h"
 #include "Version.h"
+#include "id3_Frame.h"
 
 namespace WAVE
 {
 
-	class id3_registry
+	class ID3TagFactory
 	{
+		using CreateTagFuncSigniture = std::function<std::shared_ptr<ID3_Frame_T>()>;
+
 	public:
-		id3_registry();
+		ID3TagFactory();
 
 		template <typename T>
-		void register_id3_tag(const Version &version, unsigned id)
+		void Register(const Version &version, const std::string &id)
 		{
-			if (_registered_id3_tags[version].contains(id))
-				return;
-
-			_registered_id3_tags[version].emplace(id, std::make_shared<T>());
+			auto hash = std::hash<std::string>{}(id);
+			if (!mTags[version].contains(hash))
+			{
+				auto create_func = []() { return std::make_shared<T>(); };
+				mTags[version].emplace(hash, std::move(create_func));
+			}
 		}
 
-		id3_frame_ptr get_id3_tag(const Version &version, unsigned id)
+		std::shared_ptr<ID3_Frame_T> CreateTag(const Version &version, const std::string &id)
 		{
-			if (_registered_id3_tags[version].contains(id))
-				return _registered_id3_tags[version].at(id);
+			auto hash = std::hash<std::string>{}(id);
+			if (!mTags[version].contains(hash))
+				return nullptr;
 
-			return nullptr;
+			return mTags[version].at(hash)();
 		}
 
-		static id3_registry &get()
+		static ID3TagFactory &Get()
 		{
-			static id3_registry registry;
+			static ID3TagFactory registry;
 			return registry;
 		}
 
 	private:
-		std::unordered_map<Version, std::unordered_map<unsigned, id3_frame_ptr>> _registered_id3_tags;
+		std::unordered_map<Version, std::unordered_map<uint64_t, CreateTagFuncSigniture>> mTags;
 	};
-}
+} // namespace WAVE

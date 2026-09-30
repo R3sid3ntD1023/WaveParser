@@ -1,52 +1,30 @@
 #include "WaveParser.h"
+
+#include <ShlObj.h>
 #include <Windows.h>
-
-#define ANSI_COLOR_RED "\x1b[31m"
-#define ANSI_COLOR_GREEN "\x1b[32m"
-#define ANSI_COLOR_YELLOW "\x1b[33m"
-#define ANSI_COLOR_BLUE "\x1b[34m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
-#define ANSI_COLOR_CYAN "\x1b[36m"
-#define ANSI_COLOR_WHITE "\x1b[37m"
-
-namespace WAVE
-{
-	void LogCallback(Logger::LogLevel level, const char *message)
-	{
-		switch (level)
-		{
-		case Logger::info:
-			printf(ANSI_COLOR_GREEN "%s\n", message);
-			break;
-		case Logger::trace:
-			printf(ANSI_COLOR_WHITE "%s\n", message);
-			break;
-		case Logger::warn:
-			printf(ANSI_COLOR_YELLOW "%s\n", message);
-			break;
-		case Logger::error:
-			printf(ANSI_COLOR_RED "%s\n", message);
-			break;
-		default:
-			break;
-		}
-
-		printf(ANSI_COLOR_WHITE "");
-	}
-} // namespace WAVE
+#include <commdlg.h>
 
 int main(int argv, char **argc)
 {
-	WAVE::Logger::SetCallback(WAVE::LogCallback);
 
-	const char *filename = nullptr;
-	if (argv > 1)
-	{
-		filename = argc[1];
-	}
+	std::string filename = "";
 
-	if (!filename)
-		return 0;
+	OPENFILENAMEA ofn;
+	CHAR szFile[260] = {0};
+	CHAR currentDir[256] = {0};
+	ZeroMemory(&ofn, sizeof(OPENFILENAME));
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = nullptr;
+	ofn.lpstrFile = szFile;
+	ofn.nMaxFile = sizeof(szFile);
+	if (GetCurrentDirectoryA(256, currentDir))
+		ofn.lpstrInitialDir = currentDir;
+	ofn.lpstrFilter = "(wave)\0*.wav\0";
+	ofn.nFilterIndex = 1;
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+	if (GetOpenFileNameA(&ofn) == TRUE)
+		filename = ofn.lpstrFile;
 
 	WAVE::Parser parser(filename);
 
@@ -54,26 +32,24 @@ int main(int argv, char **argc)
 
 	if (parser.parse(wave))
 	{
-		WAVE_LOG(info, "chunks:");
+		std::cout << "chunks:\n";
 		for (auto &chunk : wave.list.sub_chunks)
 		{
-			WAVE_LOG(info, "\t{}, {}", chunk->get_name(), chunk->get_data());
+			std::cout << "\t" << chunk->get_name() << " : " << chunk->get_data() << "\n";
 		}
 
-		WAVE_LOG(info, "tags:");
+		std::cout << "tags:\n";
 		for (auto &[name, frame] : wave.list.id3_chunk.get_tags())
 		{
-			WAVE_LOG(info, "\t{} :{}", frame->get_name(), frame->to_string());
+			std::cout << "\t" << frame->to_string() << "\n";
 		}
 
-		WAVE_LOG(info, "length :{}", wave.get_length());
-		WAVE_LOG(info, "num samples : {}", wave.get_num_samples_per_channel());
-		WAVE_LOG(info, "buffer size : {}", wave.get_buffer_size());
+		std::cout << "length : " << wave.get_length() << "\n";
+		std::cout << "num samples : " << wave.get_num_samples_per_channel() << "\n";
+		std::cout << "buffer size : " << wave.get_buffer_size() << "\n";
 
-		WAVE_LOG(info, "Data :{}", wave.data.get_name());
+		std::cout << "Data : " << wave.data->get_name() << "\n";
 	}
-
-	std::cin.get();
 
 	return 0;
 }

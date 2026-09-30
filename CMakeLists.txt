@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.5...4.0)
 
-project(WAVEParser VERSION 1.0 LANGUAGES CXX)
+project(WAVEParser VERSION 1.0 LANGUAGES CXX C)
 
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
@@ -9,11 +9,14 @@ foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_SOURCE_DIR}/bin/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE} )
 endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 
+set(CXX_STANDARD 20)
+set(CXX_STANDARD_REQUIRED ON)
 
-option(BUILD_TESTS "Build Tests" OFF)
+
+option(BUILD_TESTS "Build Tests" ON)
 
 add_subdirectory(WAVEParser)
 
 if(BUILD_TESTS)
-add_subdirectory(unit_tests)
+    add_subdirectory(unit_tests)
 endif()

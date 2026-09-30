@@ -2,113 +2,145 @@
 
 #include "Core.h"
 #include "id3_Frame.h"
-#include "id3_Tag.h"
 
 namespace WAVE
 {
-
-	struct chunk_info_t
+	struct ChunkInfo
 	{
-		byte_t id[4] = {0};
-		unsigned size = 0;
+		byte_t id[4] = {'\0', '\0', '\0', '\0'};
+
+		uint32_t size = 0;
 	};
 
-	struct chunk_t
+	struct Chunk
 	{
-		chunk_t() = default;
-		chunk_t(const chunk_info_t &info)
+		Chunk(const ChunkInfo &info)
 			: header(info)
 		{
 		}
 
-		~chunk_t()
-		{
-			delete[] data;
-		}
+		~Chunk() { delete[] data; }
 
-		chunk_info_t header;
+		ChunkInfo header;
+
 		byte_t *data = nullptr;
 
-		std::string get_name() const { return std::string(header.id, 4); }
-		std::string get_data() const { return std::string(data, header.size); }
+		std::string get_name() const { return std::string((char *)header.id, 4); }
+
+		byte_t *get_data() const { return data; }
 	};
 
-	struct fmt_chunk_t
+	struct FMT_Chunk
 	{
-		short audio_format;
-		short num_channels;
-		unsigned sample_rate;
-		unsigned byte_rate;
-		short block_align;
-		short bits_per_sample;
+		short audio_format = 0;
+		short num_channels = 0;
+		unsigned sample_rate = 0;
+		unsigned byte_rate = 0;
+		short block_align = 0;
+		short bits_per_sample = 0;
 	};
 
-	struct wave_header_t
+	struct WaveHeader
 	{
 		byte_t id[4] = {0};
-		unsigned size;
+		unsigned size = 0;
 		byte_t format[4] = {0};
 	};
 
-	struct id3_header_t
+	enum ID3Flags : byte_t
 	{
-		byte_t identifier[3]; /*ID3v2/file header 	ID3*/
-		byte_t version[2];	  /*ID3v2 version 		$03 00*/
-		id3_flag flags;		  /*ID3v2 flags 		%abc00000*/
-		byte_t size[4];		  /*ID3v2 size			4 * %0xxxxxxxx*/
+		None = 0x00,
+		FooterPresent = 0x10,
+		ExperimentalIndictor = 0x20,
+		ExtentedHeader = 0x40,
+		Unsynchronisation = 0x80
 	};
 
-	struct id3_extended_header_t
+#pragma pack(push, 1)
+	struct ID3_Header
 	{
-		byte_t size[4];
-		byte_t flags[2];
-		byte_t padding[4];
+		byte_t identifier[3]{0, 0, 0}; /*ID3v2/file header 	ID3*/
+		byte_t versionMajor;		   /*ID3v2 version 	hex	$03 00*/
+		byte_t versionRevision;		   /*ID3v2 version 	hex	$03 00*/
+		ID3Flags flags;				   /*ID3v2 flags 		%abcd00000*/
+		byte_t size[4];				   /*ID3v2 size			4 * %0xxxxxxxx*/
+	};
+#pragma pack(pop)
+
+	struct ID3_ExtendedHeader
+	{
+		byte_t size[4]{0, 0, 0, 0};
+		byte_t flags[2]{0, 0};
+		byte_t paddingSize[4]{0, 0, 0, 0};
 	};
 
-	struct id3_t
+	struct ID3
 	{
-		using Tags = std::unordered_map<std::string, id3_frame_ptr>;
+		ID3_Header header;
 
-		id3_header_t header;
+		bool has_tag(const std::string &name) const
+		{
+			auto hash = std::hash<std::string>{}(name);
+			return tags.contains(hash);
+		}
 
-		bool has_tag(const std::string &name) const { return tags.contains(name); }
-		id3_frame_ptr get_tag(const std::string &name) const { return has_tag(name) ? tags.at(name) : nullptr; }
+		ID3_Frame_T *get_tag(const std::string &name) const
+		{
+			auto hash = std::hash<std::string>{}(name);
+			return has_tag(name) ? tags.at(hash).get() : nullptr;
+		}
 
 		template <typename T>
-		std::shared_ptr<T> get_tag(const std::string &name) const { return std::dynamic_pointer_cast<T>(get_tag(name)); }
+			requires(std::is_base_of_v<ID3_Frame_T, T>)
+		T *get_tag(const std::string &name) const
+		{
+			return dynamic_cast<T>(get_tag(name));
+		}
 
-		const Tags &get_tags() const { return tags; }
+		const auto &get_tags() const { return tags; }
 
 	private:
-		Tags tags;
+		std::unordered_map<uint64_t, std::shared_ptr<ID3_Frame_T>> tags;
 
 		friend class Parser;
 	};
 
-	struct list_chunk_t
+	struct ListChunk
 	{
 		byte_t type[4] = {0};
-		std::vector<std::shared_ptr<chunk_t>> sub_chunks;
-		id3_t id3_chunk;
+
+		std::vector<std::shared_ptr<Chunk>> sub_chunks;
+
+		ID3 id3_chunk;
 	};
 
 	struct wave_t
 	{
-		wave_header_t header;
-		fmt_chunk_t fmt;
-		list_chunk_t list;
-		std::shared_ptr<chunk_t> data;
-		std::vector<std::shared_ptr<chunk_t>> extrachunks;
+		WaveHeader header;
 
-		unsigned get_num_samples_per_channel() const
+		FMT_Chunk fmt;
+
+		ListChunk list;
+
+		std::shared_ptr<Chunk> data;
+
+		std::vector<std::shared_ptr<Chunk>> extrachunks;
+
+		uint32_t get_num_samples_per_channel() const
 		{
 			short bits_per_sample = fmt.bits_per_sample / 8;
+			if (!data)
+				return bits_per_sample / fmt.num_channels;
+
 			return data->header.size / bits_per_sample / fmt.num_channels;
 		}
 
-		unsigned get_num_samples() const
+		uint32_t get_num_samples() const
 		{
 			short bits_per_sample = fmt.bits_per_sample / 8;
+			if (!data)
+				return bits_per_sample;
+
 			return data->header.size / bits_per_sample;
 		}
 
@@ -116,6 +148,6 @@ namespace WAVE
 
 		float get_length() const { return (float)get_num_samples_per_channel() / (float)fmt.sample_rate; }
 
-		unsigned get_buffer_size() const { return 2 * fmt.num_channels * get_num_samples_per_channel(); }
+		size_t get_buffer_size() const { return 2 * fmt.num_channels * get_num_samples_per_channel(); }
 	};
-}
+} // namespace WAVE

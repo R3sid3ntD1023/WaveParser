@@ -1,25 +1,29 @@
 #pragma once
 
-#include "id3_Frame.h"
 #include "id3_Frame_Text.h"
 
 namespace WAVE
 {
+#pragma pack(push, 1)
 
-	struct id3_Frame_TXXX : public id3_Frame_t
+	struct TXXX_Header
 	{
-		~id3_Frame_TXXX();
-
-		Frame_IMPL DescritpionImpl;
-		std::string Desciption;
-		std::string Value;
-
-		std::string get_name() const { return Desciption.c_str(); }
-
-		std::string get_description() const { return "user defined text information frame"; }
-
-		void process_data(std::ifstream &stream);
-
-		virtual std::string to_string() const;
+		ETextEncoding encoding;
 	};
-}
+#pragma pack(pop)
+
+	struct ID3_Frame_TXXX : public ID3_Frame_T
+	{
+		TXXX_Header Header;
+
+		MultiString Text;
+
+		void process_data(std::ifstream &stream, const ID3FrameHeader &h) override;
+
+		std::string get_name() const { return Text.Description; }
+
+		std::string get_description() const { return Text.Description; }
+
+		std::string get_value() const override { return Text.Value; }
+	};
+} // namespace WAVE

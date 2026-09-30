@@ -1,13 +1,15 @@
 #pragma once
 
-#include <unordered_map>
-#include <bit>
-#include <string>
 #include <algorithm>
-#include <memory>
+#include <bit>
+#include <filesystem>
 #include <fstream>
+#include <functional>
 #include <iostream>
+#include <memory>
+#include <sstream>
+#include <stdint.h>
+#include <string>
+#include <unordered_map>
 
-typedef char byte_t;
-
-#include "logger/WaveLogger.h"
+using byte_t = unsigned char;

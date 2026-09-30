@@ -6,32 +6,28 @@
 namespace WAVE
 {
 
-	enum text_encoding : byte_t
+	enum ETextEncoding : byte_t
 	{
-		ISO_8859_1,
-		ISO_IEC_10646_1_1993, // unicode,
-		UTF_16BE,
-		UTF_8
+		ISO_8859_1 = 0x00,
+		ISO_IEC_10646_1_1993 = 0x01, // UTF-16 with BOM,
+		UTF_16BE = 0x02,			 // UTF-16 big endian without BOM
+		UTF_8 = 0x03
 	};
 
-	struct Frame_IMPL
+	struct ID3_TextFrame_T : public ID3_Frame_T
 	{
-		byte_t size[4];
-		id3_Frame_t::e_frame_flags flags[2];
-		text_encoding encoding;
-	};
-
-	struct id3_TextFrame_t : public id3_Frame_t
-	{
-		Frame_IMPL Impl;
 		std::string text;
 
-		void process_data(std::ifstream &stream);
+		void process_data(std::ifstream &stream, const ID3FrameHeader &header);
 
-		unsigned get_size() const { return utils::byte_array_to_unsigned(Impl.size); };
-
-		unsigned get_encoding() const { return Impl.encoding; };
-
-		virtual std::string to_string() const { return text; }
+		std::string get_value() const override { return text; }
 	};
-}
+
+	struct MultiString
+	{
+		std::string Description;
+		std::string Value;
+	};
+
+	MultiString parseMultiString(std::ifstream &stream, ETextEncoding encoding, uint32_t size);
+} // namespace WAVE

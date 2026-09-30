@@ -1,10 +1,10 @@
-#include "frames/v23/id3_Frame_TXXX.h"
+#include "frames/v23/id3_Frame_COMM.h"
 
 namespace WAVE
 {
-	void ID3_Frame_TXXX::process_data(std::ifstream &stream, const ID3FrameHeader &h)
+	void ID3_Frame_COMM::process_data(std::ifstream &stream, const ID3FrameHeader &h)
 	{
-		static_assert(sizeof(Header) == 1);
+		static_assert(sizeof(Header) == 4);
 
 		stream.read(reinterpret_cast<char *>(&Header), sizeof(Header));
 
