@@ -183,7 +183,7 @@ namespace waveparser
 				auto start = Stream.tellg();
 
 				frame->ProcessData(Stream, header);
-				id3.Tags[std::hash<std::string>{}(frame->GetName())] = frame;
+				id3.AddTag(frame);
 
 				uint32_t consumed = Stream.tellg() - start;
 				printf("\t%s expected= %d consumed= %d\n", frameId.c_str(), header.Size, consumed);

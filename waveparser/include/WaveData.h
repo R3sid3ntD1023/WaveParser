@@ -96,6 +96,19 @@ namespace waveparser
 
 		bool HasTags(const std::string &name) const { return !GetTagsByName(name).empty(); }
 
+		std::vector<std::shared_ptr<ID3Frame>> GetTXXXByDescription(const std::string &description) const
+		{
+			std::vector<std::shared_ptr<ID3Frame>> result;
+
+			for (const auto &tag : Tags)
+			{
+				if (tag->GetName() == "TXXX" && tag->GetDescription() == description)
+					result.push_back(tag);
+			}
+
+			return result;
+		}
+
 		std::vector<std::shared_ptr<ID3Frame>> GetTagsByName(const std::string &name) const
 		{
 			std::vector<std::shared_ptr<ID3Frame>> result;

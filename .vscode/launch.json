@@ -5,10 +5,10 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
-            "args": [ ],
+            "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [ ],
+            "environment": [],
             "console": "externalTerminal",
             "preLaunchTask": "CMake: build"
         },
