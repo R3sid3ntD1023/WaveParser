@@ -12,11 +12,8 @@ endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 set(CXX_STANDARD 20)
 set(CXX_STANDARD_REQUIRED ON)
 
-
-option(BUILD_TESTS "Build Tests" ON)
-
 add_subdirectory(WAVEParser)
 
-if(BUILD_TESTS)
+if(PROJECT_IS_TOP_LEVEL)
     add_subdirectory(unit_tests)
 endif()
