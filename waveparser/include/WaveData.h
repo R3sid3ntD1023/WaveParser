@@ -176,7 +176,7 @@ namespace waveparser
 			if (Fmt.NumChannels <= 0)
 				return 0;
 
-			return GetNumSamples() / Fmt.NumChannels;
+			return GetNumSamplesPerChannel() * Fmt.NumChannels;
 		}
 
 		const std::vector<byte_t> &GetData() const { return Data->Data; }
