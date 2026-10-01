@@ -18,7 +18,7 @@ namespace waveparser
 
 		void ProcessData(std::ifstream &stream, const ID3FrameHeader &header) override;
 
-		std::string GetName() const { return "COMM"; }
+		ETagType GetTagType() const override { return ETagType::COMM; }
 
 		std::string GetDescription() const { return Text.Description.empty() ? "Comment" : Text.Description; }
 

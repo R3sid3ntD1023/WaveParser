@@ -7,9 +7,12 @@ namespace waveparser
 	class Version
 	{
 	private:
-		/* data */
+		uint32_t Major;
+		uint32_t Minor;
+		uint32_t Revision;
+
 	public:
-		Version(unsigned major, unsigned minor, unsigned revision)
+		Version(uint32_t major, uint32_t minor, uint32_t revision)
 			: Major(major),
 			  Minor(minor),
 			  Revision(revision)
@@ -17,7 +20,6 @@ namespace waveparser
 		}
 
 		bool operator==(const Version &rhs) const { return Major == rhs.Major && Minor == rhs.Minor && Revision == rhs.Revision; }
-		bool operator!=(const Version &rhs) const { return !(*this == rhs); }
 
 		const std::string ToString() const
 		{
@@ -25,11 +27,6 @@ namespace waveparser
 			ss << Major << "." << Minor << "." << Revision;
 			return ss.str();
 		}
-
-	private:
-		unsigned Major;
-		unsigned Minor;
-		unsigned Revision;
 
 		friend struct std::hash<Version>;
 	};
@@ -43,7 +40,7 @@ namespace std
 	{
 		size_t operator()(const waveparser::Version &version) const
 		{
-			return hash<unsigned>()(version.Major) | hash<unsigned>()(version.Minor) | hash<unsigned>()(version.Revision);
+			return hash<uint32_t>()(version.Major) | hash<uint32_t>()(version.Minor) | hash<uint32_t>()(version.Revision);
 		}
 	};
 

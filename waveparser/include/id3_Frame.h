@@ -30,7 +30,7 @@ namespace waveparser
 
 		virtual void ProcessData(std::ifstream &stream, const ID3FrameHeader &header) = 0;
 
-		virtual std::string GetName() const = 0;
+		virtual ETagType GetTagType() const = 0;
 
 		virtual std::string GetDescription() const = 0;
 

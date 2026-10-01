@@ -11,10 +11,10 @@ namespace waveparser
 	{
 		Version versionV23(2, 3, 0);
 
-		Register<ID3FrameCOMM>(versionV23, "COMM");
-		Register<ID3FrameTDRC>(versionV23, "TDRC");
-		Register<ID3FrameTIT2>(versionV23, "TIT2");
-		Register<ID3FrameTPE1>(versionV23, "TPE1");
-		Register<ID3FrameTXXX>(versionV23, "TXXX");
+		Register<ID3FrameCOMM>(versionV23, ETagType::COMM);
+		Register<ID3FrameTDRC>(versionV23, ETagType::TDRC);
+		Register<ID3FrameTIT2>(versionV23, ETagType::TIT2);
+		Register<ID3FrameTPE1>(versionV23, ETagType::TPE1);
+		Register<ID3FrameTXXX>(versionV23, ETagType::TXXX);
 	}
 } // namespace waveparser

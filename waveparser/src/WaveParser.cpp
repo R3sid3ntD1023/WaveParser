@@ -176,7 +176,8 @@ namespace waveparser
 			header.Size = utilities::FromBigEndian(header.Size);
 			header.Flags = (EFrameFlags)utilities::FromBigEndian(header.Flags);
 
-			auto frame = ID3TagFactory::Get().CreateTag(version, frameId);
+			auto type = GetTagTypeFromString(frameId);
+			auto frame = ID3TagFactory::Get().CreateTag(version, type);
 
 			if (frame)
 			{

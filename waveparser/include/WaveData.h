@@ -88,13 +88,14 @@ namespace waveparser
 		std::string GetName() const { return std::string(reinterpret_cast<const char *>(Header.SubChunkId), 4); }
 	};
 
-	struct ID3
+	class ID3
 	{
-		ID3Header Header;
+	public:
+		const ID3Header &GetHeader() const { return Header; }
 
 		void AddTag(std::shared_ptr<ID3Frame> tag) { Tags.push_back(tag); }
 
-		bool HasTags(const std::string &name) const { return !GetTagsByName(name).empty(); }
+		bool HasTags(ETagType type) const { return !GetTagByType(type).empty(); }
 
 		std::vector<std::shared_ptr<ID3Frame>> GetTXXXByDescription(const std::string &description) const
 		{
@@ -102,21 +103,20 @@ namespace waveparser
 
 			for (const auto &tag : Tags)
 			{
-				if (tag->GetName() == "TXXX" && tag->GetDescription() == description)
+				if (tag->GetTagType() == ETagType::TXXX && tag->GetDescription() == description)
 					result.push_back(tag);
 			}
 
 			return result;
 		}
 
-		std::vector<std::shared_ptr<ID3Frame>> GetTagsByName(const std::string &name) const
+		std::vector<std::shared_ptr<ID3Frame>> GetTagByType(ETagType type) const
 		{
 			std::vector<std::shared_ptr<ID3Frame>> result;
-			auto hash = std::hash<std::string>{}(name);
 
 			for (auto &tag : Tags)
 			{
-				if (tag->GetName() == name)
+				if (tag->GetTagType() == type)
 					result.push_back(tag);
 			}
 			return result;
@@ -125,6 +125,8 @@ namespace waveparser
 		const auto &GetTags() const { return Tags; }
 
 	private:
+		ID3Header Header;
+
 		std::vector<std::shared_ptr<ID3Frame>> Tags;
 
 		friend class Parser;
@@ -180,5 +182,7 @@ namespace waveparser
 		const std::vector<byte_t> &GetData() const { return Data->Data; }
 
 		float GetLength() const { return (float)GetNumSamplesPerChannel() / (float)GetSampleRate(); }
+
+		operator bool() const { return Data != nullptr && !GetData().empty(); }
 	};
 } // namespace waveparser

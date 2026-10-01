@@ -43,7 +43,8 @@ int main(int argv, char **argc)
 		std::cout << "tags:\n";
 		for (auto &tag : wave.Id3Chunk.GetTags())
 		{
-			std::cout << "\t" << tag->GetName() << ": " << tag->ToString() << "\n";
+			std::cout << "\t" << "\n";
+			std::cout << "\t" << ToString(tag->GetTagType()) << ": " << tag->ToString() << "\n";
 		}
 
 		std::cout << "length : " << wave.GetLength() << "\n";

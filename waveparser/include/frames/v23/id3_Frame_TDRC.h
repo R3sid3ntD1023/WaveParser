@@ -6,7 +6,8 @@ namespace waveparser
 {
 	struct ID3FrameTDRC : public ID3TextFrame
 	{
-		std::string GetName() const { return "TDRC"; }
+
+		ETagType GetTagType() const override { return ETagType::TDRC; }
 
 		std::string GetDescription() const { return "RecordingTime"; }
 	};
