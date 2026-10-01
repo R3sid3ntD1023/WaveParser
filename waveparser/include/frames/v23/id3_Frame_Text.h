@@ -3,7 +3,7 @@
 #include "id3_Frame.h"
 #include "utility/Utils.h"
 
-namespace WAVE
+namespace waveparser
 {
 
 	enum ETextEncoding : byte_t
@@ -14,13 +14,13 @@ namespace WAVE
 		UTF_8 = 0x03
 	};
 
-	struct ID3_TextFrame_T : public ID3_Frame_T
+	struct ID3TextFrame : public ID3Frame
 	{
-		std::string text;
+		std::string Text;
 
-		void process_data(std::ifstream &stream, const ID3FrameHeader &header);
+		void ProcessData(std::ifstream &stream, const ID3FrameHeader &header) override;
 
-		std::string get_value() const override { return text; }
+		std::string GetValue() const override { return Text; }
 	};
 
 	struct MultiString
@@ -29,5 +29,5 @@ namespace WAVE
 		std::string Value;
 	};
 
-	MultiString parseMultiString(std::ifstream &stream, ETextEncoding encoding, uint32_t size);
-} // namespace WAVE
+	MultiString ParseMultiString(std::ifstream &stream, ETextEncoding encoding, uint32_t size);
+} // namespace waveparser

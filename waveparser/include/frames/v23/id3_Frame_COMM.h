@@ -1,27 +1,27 @@
 #pragma once
 #include "id3_Frame_Text.h"
 
-namespace WAVE
+namespace waveparser
 {
 #pragma pack(push, 1)
-	struct COMM_Header
+	struct COMMHeader
 	{
-		ETextEncoding encoding;
-		byte_t language[3];
+		ETextEncoding Encoding;
+		byte_t Language[3];
 	};
 #pragma pack(pop)
 
-	struct ID3_Frame_COMM : public ID3_Frame_T
+	struct ID3FrameCOMM : public ID3Frame
 	{
-		COMM_Header Header;
+		COMMHeader Header;
 		MultiString Text;
 
-		void process_data(std::ifstream &stream, const ID3FrameHeader &h) override;
+		void ProcessData(std::ifstream &stream, const ID3FrameHeader &header) override;
 
-		std::string get_name() const { return "COMM"; }
+		std::string GetName() const { return "COMM"; }
 
-		std::string get_description() const { return Text.Description; }
+		std::string GetDescription() const { return Text.Description.empty() ? "Comment" : Text.Description; }
 
-		std::string get_value() const override { return Text.Value; }
+		std::string GetValue() const override { return Text.Value; }
 	};
-} // namespace WAVE
+} // namespace waveparser

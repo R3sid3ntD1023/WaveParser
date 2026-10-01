@@ -2,12 +2,12 @@
 
 #include "id3_Frame_Text.h"
 
-namespace WAVE
+namespace waveparser
 {
-	struct ID3_Frame_TDRC : public ID3_TextFrame_T
+	struct ID3FrameTDRC : public ID3TextFrame
 	{
-		std::string get_name() const { return "TDRC"; }
+		std::string GetName() const { return "TDRC"; }
 
-		std::string get_description() const { return "RecordingTime"; }
+		std::string GetDescription() const { return "RecordingTime"; }
 	};
-} // namespace WAVE
+} // namespace waveparser

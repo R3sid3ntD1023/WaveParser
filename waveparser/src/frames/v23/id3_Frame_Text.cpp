@@ -1,8 +1,8 @@
 #include "frames/v23/id3_Frame_Text.h"
 
-namespace WAVE
+namespace waveparser
 {
-	std::string utf16_to_utf8(const std::u16string &utf16)
+	std::string Utf16ToUtf8(const std::u16string &utf16)
 	{
 		std::string utf8;
 		utf8.reserve(utf16.size() * 3); // worst case
@@ -29,7 +29,7 @@ namespace WAVE
 		return utf8;
 	}
 
-	std::string convert_to_utf8(ETextEncoding encoding, const std::vector<char> &data)
+	std::string ConvertToUtf8(ETextEncoding encoding, const std::vector<char> &data)
 	{
 
 		switch (encoding)
@@ -83,7 +83,7 @@ namespace WAVE
 				}
 			}
 
-			return utf16_to_utf8(utf16);
+			return Utf16ToUtf8(utf16);
 		}
 		case ETextEncoding::UTF_8:
 		{
@@ -94,9 +94,9 @@ namespace WAVE
 		}
 	}
 
-	void ID3_TextFrame_T::process_data(std::ifstream &stream, const ID3FrameHeader &header)
+	void ID3TextFrame::ProcessData(std::ifstream &stream, const ID3FrameHeader &header)
 	{
-		auto size = header.size;
+		auto size = header.Size;
 
 		ETextEncoding encoding;
 		stream.read(reinterpret_cast<char *>(&encoding), 1);
@@ -106,10 +106,10 @@ namespace WAVE
 		std::vector<char> raw(size);
 		stream.read(raw.data(), size);
 
-		text = convert_to_utf8(encoding, raw);
+		Text = ConvertToUtf8(encoding, raw);
 	}
 
-	MultiString parseMultiString(std::ifstream &stream, ETextEncoding encoding, uint32_t size)
+	MultiString ParseMultiString(std::ifstream &stream, ETextEncoding encoding, uint32_t size)
 	{
 		std::vector<char> raw(size);
 		stream.read(raw.data(), size);
@@ -139,13 +139,13 @@ namespace WAVE
 		if (termPos == std::string::npos)
 		{
 			// no terminator found - treat as single string
-			return {convert_to_utf8(encoding, raw), ""};
+			return {ConvertToUtf8(encoding, raw), ""};
 		}
 
 		std::vector<char> descRaw(raw.begin(), raw.begin() + termPos);
 		std::vector<char> valueRaw(raw.begin() + termPos + terminatorSize, raw.end());
 
-		return {convert_to_utf8(encoding, descRaw), convert_to_utf8(encoding, valueRaw)};
+		return {ConvertToUtf8(encoding, descRaw), ConvertToUtf8(encoding, valueRaw)};
 	}
 
-} // namespace WAVE
+} // namespace waveparser

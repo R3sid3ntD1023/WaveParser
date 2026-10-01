@@ -1,13 +1,13 @@
 #include "frames/v23/id3_Frame_TXXX.h"
 
-namespace WAVE
+namespace waveparser
 {
-	void ID3_Frame_TXXX::process_data(std::ifstream &stream, const ID3FrameHeader &h)
+	void ID3FrameTXXX::ProcessData(std::ifstream &stream, const ID3FrameHeader &header)
 	{
-		static_assert(sizeof(Header) == 1);
+		static_assert(sizeof(TXXXHeader) == 1);
 
 		stream.read(reinterpret_cast<char *>(&Header), sizeof(Header));
 
-		Text = parseMultiString(stream, Header.encoding, h.size - sizeof(Header));
+		Text = ParseMultiString(stream, Header.Encoding, header.Size - sizeof(Header));
 	}
-} // namespace WAVE
+} // namespace waveparser

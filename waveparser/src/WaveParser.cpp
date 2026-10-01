@@ -3,170 +3,219 @@
 #include "id3_FrameHandler.h"
 #include "utility/Utils.h"
 
-namespace WAVE
+namespace waveparser
 {
-	Parser::Parser(const std::filesystem::path &filename)
+	Parser::Parser(const std::filesystem::path &filePath)
 	{
-		stream = std::ifstream(filename, std::ios::binary | std::ios::in);
+		Stream = std::ifstream(filePath, std::ios::binary | std::ios::in);
 	}
 
-	bool Parser::parse(wave_t &wave)
+	bool Parser::Parse(Wave &wave)
 	{
-		if (!parse_header(wave.header))
+		if (!ParseHeader(wave.Header))
 		{
 			return false;
 		}
 
-		ChunkInfo chunk_info;
-		unsigned chunk_val = 0;
+		ChunkHeader chunkHeader;
 
-		while (stream.read(reinterpret_cast<char *>(&chunk_info), sizeof(ChunkInfo)))
+		while (Stream.read(reinterpret_cast<char *>(&chunkHeader), sizeof(chunkHeader)))
 		{
-			chunk_val = utils::byte_array_to_int<uint32_t>(chunk_info.id);
+			std::string chunkId = MakeMarker(chunkHeader.SubChunkId);
 
-			switch (chunk_val)
+			if (chunkId == "DATA")
 			{
-			case DATA_MARKER:
-			{
-				wave.data = std::make_shared<Chunk>(chunk_info);
-				parse_chunk(*wave.data);
-				break;
+				wave.Data = std::make_shared<Chunk>(chunkHeader);
+				if (!ParseChunk(*wave.Data))
+				{
+					return false;
+				}
 			}
-			case LIST_MARKER:
+			else if (chunkId == "LIST")
 			{
-				ListChunk list;
-				stream.read(reinterpret_cast<char *>(list.type), 4);
-				parse_list(list);
+				LISTChunk listChunk;
+				if (!ParseList(listChunk, chunkHeader.SubChunkSize))
+				{
+					return false;
+				}
 
-				wave.list = std::move(list);
-				break;
+				wave.List = std::move(listChunk);
 			}
-			case FMT_MARKER:
+			else if (chunkId == "FMT ")
 			{
-
-				parse_fmt(wave.fmt);
-				break;
+				if (!ParseFmt(wave.Fmt))
+				{
+					return false;
+				}
 			}
-			default:
+			else if (chunkId == "ID3 ")
 			{
-				auto &chunk = *wave.extrachunks.emplace_back(std::make_shared<Chunk>(chunk_info));
-				parse_chunk(chunk);
-				break;
-			}
-			}
-		};
+				if (chunkHeader.SubChunkSize < sizeof(ID3Header))
+					return false;
 
-		return true;
-	}
+				auto chunkEnd = Stream.tellg() + (std::streamoff)chunkHeader.SubChunkSize;
 
-	bool Parser::parse_header(WaveHeader &header)
-	{
-		stream.read(reinterpret_cast<char *>(&header), sizeof(WaveHeader));
+				ID3Header id3{};
+				if (!Stream.read(reinterpret_cast<char *>(&id3), sizeof(ID3Header)))
+					return false;
 
-		auto id = utils::byte_array_to_int<uint32_t>(header.id);
-		auto format = utils::byte_array_to_int<uint32_t>(header.format);
+				if (std::string(reinterpret_cast<char *>(id3.Identifier), 3) != "ID3")
+					return false;
 
-		if (id != RIFF_TAG)
-		{
-			return false;
-		}
+				const uint32_t payloadSize = chunkHeader.SubChunkSize - sizeof(ID3Header);
+				if (utilities::DecodeSynchsafe(id3.Size) > payloadSize)
+					return false;
 
-		if (format != WAVE_TAG)
-		{
-			return false;
-		}
+				auto major = (uint32_t)id3.VersionMajor;
+				auto revision = (uint32_t)id3.VersionRevision;
+				auto &id3Chunk = wave.Id3Chunk;
+				id3Chunk.Header = id3;
 
-		return true;
-	}
+				printf("ID3 Version: v2.%x.%x\n", major, revision);
+				printf("ID3 Size: %u\n", utilities::DecodeSynchsafe(id3.Size));
+				printf("ID3 Flags: %s\n", ToString(id3.Flags).c_str());
 
-	void Parser::parse_fmt(FMT_Chunk &fmt_chunck)
-	{
-		stream.read((char *)&fmt_chunck, sizeof(FMT_Chunk));
-	}
-
-	void Parser::parse_list(ListChunk &list_chunk)
-	{
-		ChunkInfo info{};
-
-		while (stream.read(reinterpret_cast<char *>(&info), sizeof(ChunkInfo)))
-		{
-			info.size = utils::from_little_endian(info.size);
-
-			std::cout << info.id << ":" << info.size << '\n';
-
-			auto marker = utils::byte_array_to_int<uint32_t>(info.id);
-
-			if (marker == ID3_MARKER)
-			{
-				ID3_Header id3{};
-				stream.read(reinterpret_cast<char *>(&id3), sizeof(ID3_Header));
-
-				auto major = (uint32_t)id3.versionMajor;
-				auto revision = (uint32_t)id3.versionRevision;
-				std::cout << "ID3 Version: v2." << std::hex << std::uppercase << major << "." << revision << '\n';
-
-				auto &id3Chunck = list_chunk.id3_chunk;
-				id3Chunck.header = id3;
-				parse_id3(id3Chunck, Version{2, major, revision});
+				if (!ParseID3(id3Chunk, Version{2, major, revision}))
+					return false;
+				Stream.seekg(chunkEnd);
 			}
 			else
 			{
-
-				auto &chunk = *list_chunk.sub_chunks.emplace_back(std::make_unique<Chunk>(info));
-				parse_chunk(chunk);
+				printf("Skipping Chunk... : %.4s (%u bytes)\n", chunkHeader.SubChunkId, chunkHeader.SubChunkSize);
+				Stream.seekg(chunkHeader.SubChunkSize, std::ios::cur);
 			}
 		}
+
+		return true;
 	}
 
-	void Parser::parse_id3(ID3 &id3, const Version &version)
+	bool Parser::ParseHeader(RIFFHeader &header)
+	{
+		Stream.read(reinterpret_cast<char *>(&header), sizeof(RIFFHeader));
+
+		auto chunkId = MakeMarker(header.ChunkId);
+		auto format = MakeMarker(header.Format);
+
+		if (chunkId != "RIFF")
+		{
+			return false;
+		}
+
+		if (format != "WAVE")
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	bool Parser::ParseFmt(FMTChunk &fmtChunk)
+	{
+		if (!Stream.read((char *)&fmtChunk, sizeof(FMTChunk)))
+			return false;
+		return true;
+	}
+
+	bool Parser::ParseList(LISTChunk &listChunk, uint32_t size)
 	{
 
-		auto pos = stream.tellg();
-		uint32_t tagSize = utils::decode_synh_safe(id3.header.size);
-		auto endPos = pos + (std::streamoff)tagSize;
+		if (size < sizeof(listChunk.Type))
+			return false;
 
-		while (stream.tellg() < endPos)
+		if (!Stream.read(reinterpret_cast<char *>(listChunk.Type), sizeof(listChunk.Type)))
+			return false;
+
+		const auto listEnd = Stream.tellg() + (std::streamoff)(size - sizeof(listChunk.Type));
+
+		while (Stream.tellg() < listEnd)
 		{
-			std::string frameID(4, '\0');
-			stream.read(reinterpret_cast<char *>(frameID.data()), 4);
+			if (listEnd - Stream.tellg() < sizeof(ChunkHeader))
+				return false;
 
-			if (frameID[0] == 0 && frameID[1] == 0 && frameID[2] == 0 && frameID[3] == 0)
+			ChunkHeader info{};
+			if (!Stream.read(reinterpret_cast<char *>(&info), sizeof(ChunkHeader)))
+				return false;
+
+			info.SubChunkSize = utilities::FromLittleEndian(info.SubChunkSize);
+
+			const auto dataEnd = Stream.tellg() + (std::streamoff)info.SubChunkSize;
+			const auto paddedEnd = dataEnd + (std::streamoff)(info.SubChunkSize & 1);
+
+			if (paddedEnd > listEnd)
+				return false;
+
+			Stream.seekg(dataEnd);
+
+			if (!Stream)
+				return false;
+
+			Stream.seekg(paddedEnd);
+			if (!Stream)
+				return false;
+		}
+		return Stream.tellg() == listEnd;
+	}
+
+	bool Parser::ParseID3(ID3 &id3, const Version &version)
+	{
+		auto position = Stream.tellg();
+		uint32_t tagSize = utilities::DecodeSynchsafe(id3.Header.Size);
+		auto endPosition = position + (std::streamoff)tagSize;
+
+		while (Stream.tellg() < endPosition)
+		{
+			std::string frameId(4, '\0');
+			Stream.read(reinterpret_cast<char *>(frameId.data()), 4);
+
+			if (frameId[0] == 0 && frameId[1] == 0 && frameId[2] == 0 && frameId[3] == 0)
 				break;
 
 			ID3FrameHeader header{};
-			stream.read(reinterpret_cast<char *>(&header), sizeof(ID3FrameHeader));
+			Stream.read(reinterpret_cast<char *>(&header), sizeof(ID3FrameHeader));
 
-			header.size = utils::from_big_endian(header.size);
-			header.flags = (EFrameFlags)utils::from_big_endian(header.flags);
+			header.Size = utilities::FromBigEndian(header.Size);
+			header.Flags = (EFrameFlags)utilities::FromBigEndian(header.Flags);
 
-			auto frame = ID3TagFactory::Get().CreateTag(version, frameID);
+			auto frame = ID3TagFactory::Get().CreateTag(version, frameId);
 
 			if (frame)
 			{
-				auto start = stream.tellg();
+				auto start = Stream.tellg();
 
-				frame->process_data(stream, header);
-				id3.tags[std::hash<std::string>{}(frame->get_name())] = frame;
+				frame->ProcessData(Stream, header);
+				id3.Tags[std::hash<std::string>{}(frame->GetName())] = frame;
 
-				uint32_t consumed = stream.tellg() - start;
-				std::cout << frameID << " expected= " << tagSize << " consumed=" << consumed << '\n';
+				uint32_t consumed = Stream.tellg() - start;
+				printf("\t%s expected= %d consumed= %d\n", frameId.c_str(), header.Size, consumed);
 			}
 			else
 			{
-				stream.seekg(header.size, std::ios::cur);
+				Stream.seekg(header.Size, std::ios::cur);
 			}
 		}
 
-		stream.seekg(endPos);
+		Stream.seekg(endPosition);
+		return true;
 	}
 
-	void Parser::parse_chunk(Chunk &chunk)
+	bool Parser::ParseChunk(Chunk &chunk)
 	{
-		auto size = chunk.header.size;
-		if (size)
-		{
-			chunk.data = new byte_t[size + 1];
-			stream.read(reinterpret_cast<char *>(chunk.data), size);
-		}
+		auto size = chunk.Header.SubChunkSize;
+		if (!size)
+			return false;
+
+		chunk.Data.resize(size + 1);
+		if (!Stream.read(reinterpret_cast<char *>(chunk.Data.data()), size))
+			return false;
+
+		return true;
 	}
-} // namespace WAVE
+
+	std::string Parser::MakeMarker(const byte_t id[4])
+	{
+		std::string m(4, '\0');
+		memcpy(m.data(), id, 4);
+		std::transform(m.begin(), m.end(), m.begin(), ::toupper);
+		return m;
+	}
+} // namespace waveparser

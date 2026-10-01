@@ -2,28 +2,28 @@
 
 #include "id3_Frame_Text.h"
 
-namespace WAVE
+namespace waveparser
 {
 #pragma pack(push, 1)
 
-	struct TXXX_Header
+	struct TXXXHeader
 	{
-		ETextEncoding encoding;
+		ETextEncoding Encoding;
 	};
 #pragma pack(pop)
 
-	struct ID3_Frame_TXXX : public ID3_Frame_T
+	struct ID3FrameTXXX : public ID3Frame
 	{
-		TXXX_Header Header;
+		TXXXHeader Header;
 
 		MultiString Text;
 
-		void process_data(std::ifstream &stream, const ID3FrameHeader &h) override;
+		void ProcessData(std::ifstream &stream, const ID3FrameHeader &header) override;
 
-		std::string get_name() const { return Text.Description; }
+		std::string GetName() const { return "TXXX"; }
 
-		std::string get_description() const { return Text.Description; }
+		std::string GetDescription() const { return Text.Description; }
 
-		std::string get_value() const override { return Text.Value; }
+		std::string GetValue() const override { return Text.Value; }
 	};
-} // namespace WAVE
+} // namespace waveparser

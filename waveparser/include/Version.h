@@ -2,7 +2,7 @@
 
 #include "Core.h"
 
-namespace WAVE
+namespace waveparser
 {
 	class Version
 	{
@@ -10,38 +10,41 @@ namespace WAVE
 		/* data */
 	public:
 		Version(unsigned major, unsigned minor, unsigned revision)
-			: mMajor(major),
-			  mMinor(minor),
-			  mRevision(revision)
+			: Major(major),
+			  Minor(minor),
+			  Revision(revision)
 		{
 		}
 
-		bool operator==(const Version &rhs) const { return mMajor == rhs.mMajor && mMinor == rhs.mMinor && mRevision == rhs.mRevision; }
+		bool operator==(const Version &rhs) const { return Major == rhs.Major && Minor == rhs.Minor && Revision == rhs.Revision; }
 		bool operator!=(const Version &rhs) const { return !(*this == rhs); }
 
-		const std::string to_string() const
+		const std::string ToString() const
 		{
 			std::stringstream ss;
-			ss << mMajor << "." << mMinor << "." << mRevision;
+			ss << Major << "." << Minor << "." << Revision;
 			return ss.str();
 		}
 
 	private:
-		unsigned mMajor;
-		unsigned mMinor;
-		unsigned mRevision;
+		unsigned Major;
+		unsigned Minor;
+		unsigned Revision;
 
 		friend struct std::hash<Version>;
 	};
 
-} // namespace WAVE
+} // namespace waveparser
 
 namespace std
 {
 	template <>
-	struct hash<WAVE::Version>
+	struct hash<waveparser::Version>
 	{
-		size_t operator()(const WAVE::Version &version) const { return hash<unsigned>()(version.mMajor) | hash<unsigned>()(version.mMinor) | hash<unsigned>()(version.mRevision); }
+		size_t operator()(const waveparser::Version &version) const
+		{
+			return hash<unsigned>()(version.Major) | hash<unsigned>()(version.Minor) | hash<unsigned>()(version.Revision);
+		}
 	};
 
 } // namespace std

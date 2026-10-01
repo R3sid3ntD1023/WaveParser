@@ -3,50 +3,8 @@
 #include "Core.h"
 #include "id3_Frame.h"
 
-namespace WAVE
+namespace waveparser
 {
-	struct ChunkInfo
-	{
-		byte_t id[4] = {'\0', '\0', '\0', '\0'};
-
-		uint32_t size = 0;
-	};
-
-	struct Chunk
-	{
-		Chunk(const ChunkInfo &info)
-			: header(info)
-		{
-		}
-
-		~Chunk() { delete[] data; }
-
-		ChunkInfo header;
-
-		byte_t *data = nullptr;
-
-		std::string get_name() const { return std::string((char *)header.id, 4); }
-
-		byte_t *get_data() const { return data; }
-	};
-
-	struct FMT_Chunk
-	{
-		short audio_format = 0;
-		short num_channels = 0;
-		unsigned sample_rate = 0;
-		unsigned byte_rate = 0;
-		short block_align = 0;
-		short bits_per_sample = 0;
-	};
-
-	struct WaveHeader
-	{
-		byte_t id[4] = {0};
-		unsigned size = 0;
-		byte_t format[4] = {0};
-	};
-
 	enum ID3Flags : byte_t
 	{
 		None = 0x00,
@@ -56,98 +14,158 @@ namespace WAVE
 		Unsynchronisation = 0x80
 	};
 
-#pragma pack(push, 1)
-	struct ID3_Header
+	inline std::string ToString(ID3Flags flags)
 	{
-		byte_t identifier[3]{0, 0, 0}; /*ID3v2/file header 	ID3*/
-		byte_t versionMajor;		   /*ID3v2 version 	hex	$03 00*/
-		byte_t versionRevision;		   /*ID3v2 version 	hex	$03 00*/
-		ID3Flags flags;				   /*ID3v2 flags 		%abcd00000*/
-		byte_t size[4];				   /*ID3v2 size			4 * %0xxxxxxxx*/
+		std::string result;
+		if (flags & None)
+			result += "None ";
+		if (flags & FooterPresent)
+			result += "FooterPresent ";
+		if (flags & ExperimentalIndictor)
+			result += "ExperimentalIndictor ";
+		if (flags & ExtentedHeader)
+			result += "ExtentedHeader ";
+		if (flags & Unsynchronisation)
+			result += "Unsynchronisation ";
+		return result;
+	}
+
+#pragma pack(push, 1)
+
+	struct RIFFHeader
+	{
+		byte_t ChunkId[4] = {0, 0, 0, 0};
+		uint32_t ChunkSize;
+		byte_t Format[4] = {0, 0, 0, 0};
 	};
+
+	struct FMTChunk
+	{
+		short AudioFormat = 0;
+		short NumChannels = 0;
+		unsigned SampleRate = 0;
+		unsigned ByteRate = 0;
+		short BlockAlign = 0;
+		short BitsPerSample = 0;
+	};
+
+	struct ChunkHeader
+	{
+		byte_t SubChunkId[4] = {0, 0, 0, 0};
+
+		uint32_t SubChunkSize = 0;
+	};
+
+	struct ID3Header
+	{
+		byte_t Identifier[3]{0, 0, 0}; /*ID3v2/file header 	ID3*/
+		byte_t VersionMajor;		   /*ID3v2 version 	hex	$03 00*/
+		byte_t VersionRevision;		   /*ID3v2 version 	hex	$03 00*/
+		ID3Flags Flags;				   /*ID3v2 flags 		%abcd00000*/
+		byte_t Size[4];				   /*ID3v2 size			4 * %0xxxxxxxx*/
+	};
+
+	struct ID3ExtendedHeader
+	{
+		byte_t Size[4]{0, 0, 0, 0};
+		byte_t Flags[2]{0, 0};
+		byte_t PaddingSize[4]{0, 0, 0, 0};
+	};
+
 #pragma pack(pop)
 
-	struct ID3_ExtendedHeader
+	struct Chunk
 	{
-		byte_t size[4]{0, 0, 0, 0};
-		byte_t flags[2]{0, 0};
-		byte_t paddingSize[4]{0, 0, 0, 0};
+		Chunk(const ChunkHeader &chunkHeader)
+			: Header(chunkHeader)
+		{
+		}
+
+		ChunkHeader Header;
+
+		std::vector<byte_t> Data;
+
+		std::string GetName() const { return std::string(reinterpret_cast<const char *>(Header.SubChunkId), 4); }
 	};
 
 	struct ID3
 	{
-		ID3_Header header;
+		ID3Header Header;
 
-		bool has_tag(const std::string &name) const
+		void AddTag(std::shared_ptr<ID3Frame> tag) { Tags.push_back(tag); }
+
+		bool HasTags(const std::string &name) const { return !GetTagsByName(name).empty(); }
+
+		std::vector<std::shared_ptr<ID3Frame>> GetTagsByName(const std::string &name) const
 		{
+			std::vector<std::shared_ptr<ID3Frame>> result;
 			auto hash = std::hash<std::string>{}(name);
-			return tags.contains(hash);
+
+			for (auto &tag : Tags)
+			{
+				if (tag->GetName() == name)
+					result.push_back(tag);
+			}
+			return result;
 		}
 
-		ID3_Frame_T *get_tag(const std::string &name) const
-		{
-			auto hash = std::hash<std::string>{}(name);
-			return has_tag(name) ? tags.at(hash).get() : nullptr;
-		}
-
-		template <typename T>
-			requires(std::is_base_of_v<ID3_Frame_T, T>)
-		T *get_tag(const std::string &name) const
-		{
-			return dynamic_cast<T>(get_tag(name));
-		}
-
-		const auto &get_tags() const { return tags; }
+		const auto &GetTags() const { return Tags; }
 
 	private:
-		std::unordered_map<uint64_t, std::shared_ptr<ID3_Frame_T>> tags;
+		std::vector<std::shared_ptr<ID3Frame>> Tags;
 
 		friend class Parser;
 	};
 
-	struct ListChunk
+	struct LISTChunk
 	{
-		byte_t type[4] = {0};
+		byte_t Type[4] = {0};
 
-		std::vector<std::shared_ptr<Chunk>> sub_chunks;
-
-		ID3 id3_chunk;
+		std::vector<std::shared_ptr<Chunk>> SubChunks;
 	};
 
-	struct wave_t
+	struct Wave
 	{
-		WaveHeader header;
+		RIFFHeader Header;
 
-		FMT_Chunk fmt;
+		FMTChunk Fmt;
 
-		ListChunk list;
+		LISTChunk List;
 
-		std::shared_ptr<Chunk> data;
+		ID3 Id3Chunk;
 
-		std::vector<std::shared_ptr<Chunk>> extrachunks;
+		std::shared_ptr<Chunk> Data;
 
-		uint32_t get_num_samples_per_channel() const
+		std::vector<std::shared_ptr<Chunk>> ExtraChunks;
+
+		short GetAudioFormat() const { return Fmt.AudioFormat; }
+
+		short GetNumChannels() const { return Fmt.NumChannels; }
+
+		uint32_t GetSampleRate() const { return Fmt.SampleRate; }
+
+		uint32_t GetBitRate() const { return Fmt.SampleRate * Fmt.BitsPerSample; }
+
+		uint32_t GetNumSamplesPerChannel() const
 		{
-			short bits_per_sample = fmt.bits_per_sample / 8;
-			if (!data)
-				return bits_per_sample / fmt.num_channels;
+			if (!Data || Fmt.BitsPerSample == 0)
+				return 0;
 
-			return data->header.size / bits_per_sample / fmt.num_channels;
+			const auto bytesPerSample = Fmt.BitsPerSample / 8;
+
+			return bytesPerSample ? Data->Data.size() / bytesPerSample : 0;
 		}
 
-		uint32_t get_num_samples() const
+		uint32_t GetNumSamples() const
 		{
-			short bits_per_sample = fmt.bits_per_sample / 8;
-			if (!data)
-				return bits_per_sample;
+			if (Fmt.NumChannels <= 0)
+				return 0;
 
-			return data->header.size / bits_per_sample;
+			return GetNumSamples() / Fmt.NumChannels;
 		}
 
-		short *get_samples() const { return (short *)(data->data); }
+		const std::vector<byte_t> &GetData() const { return Data->Data; }
 
-		float get_length() const { return (float)get_num_samples_per_channel() / (float)fmt.sample_rate; }
-
-		size_t get_buffer_size() const { return 2 * fmt.num_channels * get_num_samples_per_channel(); }
+		float GetLength() const { return (float)GetNumSamplesPerChannel() / (float)GetSampleRate(); }
 	};
-} // namespace WAVE
+} // namespace waveparser

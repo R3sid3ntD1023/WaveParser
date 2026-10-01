@@ -2,7 +2,7 @@
 
 #include "Core.h"
 
-namespace WAVE
+namespace waveparser
 {
 
 	enum EFrameFlags : uint16_t
@@ -18,25 +18,25 @@ namespace WAVE
 #pragma pack(push, 1)
 	struct ID3FrameHeader
 	{
-		uint32_t size = 0;
-		uint16_t flags;
+		uint32_t Size = 0;
+		uint16_t Flags;
 	};
 #pragma pack(pop)
 
-	struct ID3_Frame_T
+	struct ID3Frame
 	{
 
-		virtual ~ID3_Frame_T() = default;
+		virtual ~ID3Frame() = default;
 
-		virtual void process_data(std::ifstream &stream, const ID3FrameHeader &header) = 0;
+		virtual void ProcessData(std::ifstream &stream, const ID3FrameHeader &header) = 0;
 
-		virtual std::string get_name() const = 0;
+		virtual std::string GetName() const = 0;
 
-		virtual std::string get_description() const = 0;
+		virtual std::string GetDescription() const = 0;
 
-		virtual std::string get_value() const = 0;
+		virtual std::string GetValue() const = 0;
 
-		std::string to_string() const { return get_name() + ":" + get_description() + "-" + get_value(); };
+		std::string ToString() const { return GetDescription() + " : " + GetValue(); };
 	};
 
-} // namespace WAVE
+} // namespace waveparser

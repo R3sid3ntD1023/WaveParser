@@ -4,12 +4,12 @@
 #include "Version.h"
 #include "id3_Frame.h"
 
-namespace WAVE
+namespace waveparser
 {
 
 	class ID3TagFactory
 	{
-		using CreateTagFuncSigniture = std::function<std::shared_ptr<ID3_Frame_T>()>;
+		using CreateTagFunction = std::function<std::shared_ptr<ID3Frame>()>;
 
 	public:
 		ID3TagFactory();
@@ -18,20 +18,20 @@ namespace WAVE
 		void Register(const Version &version, const std::string &id)
 		{
 			auto hash = std::hash<std::string>{}(id);
-			if (!mTags[version].contains(hash))
+			if (!Tags[version].contains(hash))
 			{
-				auto create_func = []() { return std::make_shared<T>(); };
-				mTags[version].emplace(hash, std::move(create_func));
+				auto createFunc = []() { return std::make_shared<T>(); };
+				Tags[version].emplace(hash, std::move(createFunc));
 			}
 		}
 
-		std::shared_ptr<ID3_Frame_T> CreateTag(const Version &version, const std::string &id)
+		std::shared_ptr<ID3Frame> CreateTag(const Version &version, const std::string &id)
 		{
 			auto hash = std::hash<std::string>{}(id);
-			if (!mTags[version].contains(hash))
+			if (!Tags[version].contains(hash))
 				return nullptr;
 
-			return mTags[version].at(hash)();
+			return Tags[version].at(hash)();
 		}
 
 		static ID3TagFactory &Get()
@@ -41,6 +41,6 @@ namespace WAVE
 		}
 
 	private:
-		std::unordered_map<Version, std::unordered_map<uint64_t, CreateTagFuncSigniture>> mTags;
+		std::unordered_map<Version, std::unordered_map<uint64_t, CreateTagFunction>> Tags;
 	};
-} // namespace WAVE
+} // namespace waveparser

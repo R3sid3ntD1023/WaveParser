@@ -7,48 +7,49 @@
 int main(int argv, char **argc)
 {
 
-	std::string filename = "";
+	std::string filePath = "";
 
-	OPENFILENAMEA ofn;
-	CHAR szFile[260] = {0};
-	CHAR currentDir[256] = {0};
-	ZeroMemory(&ofn, sizeof(OPENFILENAME));
-	ofn.lStructSize = sizeof(OPENFILENAME);
-	ofn.hwndOwner = nullptr;
-	ofn.lpstrFile = szFile;
-	ofn.nMaxFile = sizeof(szFile);
-	if (GetCurrentDirectoryA(256, currentDir))
-		ofn.lpstrInitialDir = currentDir;
-	ofn.lpstrFilter = "(wave)\0*.wav\0";
-	ofn.nFilterIndex = 1;
-	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+	OPENFILENAMEA fileDialog;
+	CHAR selectedFile[260] = {0};
+	CHAR currentDirectory[256] = {0};
+	ZeroMemory(&fileDialog, sizeof(OPENFILENAME));
+	fileDialog.lStructSize = sizeof(OPENFILENAME);
+	fileDialog.hwndOwner = nullptr;
+	fileDialog.lpstrFile = selectedFile;
+	fileDialog.nMaxFile = sizeof(selectedFile);
+	if (GetCurrentDirectoryA(256, currentDirectory))
+		fileDialog.lpstrInitialDir = currentDirectory;
+	fileDialog.lpstrFilter = "(wave)\0*.wav\0";
+	fileDialog.nFilterIndex = 1;
+	fileDialog.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
-	if (GetOpenFileNameA(&ofn) == TRUE)
-		filename = ofn.lpstrFile;
+	if (GetOpenFileNameA(&fileDialog) == TRUE)
+		filePath = fileDialog.lpstrFile;
 
-	WAVE::Parser parser(filename);
+	waveparser::Parser parser(filePath);
 
-	WAVE::wave_t wave{};
+	waveparser::Wave wave{};
 
-	if (parser.parse(wave))
+	bool parsed = parser.Parse(wave);
+	if (parsed)
 	{
 		std::cout << "chunks:\n";
-		for (auto &chunk : wave.list.sub_chunks)
+		for (auto &chunk : wave.List.SubChunks)
 		{
-			std::cout << "\t" << chunk->get_name() << " : " << chunk->get_data() << "\n";
+			std::cout << "\t" << chunk->GetName() << " : ";
+			std::cout.write(reinterpret_cast<const char *>(chunk->Data.data()), chunk->Data.size()) << "\n";
 		}
 
 		std::cout << "tags:\n";
-		for (auto &[name, frame] : wave.list.id3_chunk.get_tags())
+		for (auto &[name, frame] : wave.Id3Chunk.GetTags())
 		{
-			std::cout << "\t" << frame->to_string() << "\n";
+			std::cout << "\t" << frame->ToString() << "\n";
 		}
 
-		std::cout << "length : " << wave.get_length() << "\n";
-		std::cout << "num samples : " << wave.get_num_samples_per_channel() << "\n";
-		std::cout << "buffer size : " << wave.get_buffer_size() << "\n";
+		std::cout << "length : " << wave.GetLength() << "\n";
+		std::cout << "num samples : " << wave.GetNumSamplesPerChannel() << "\n";
 
-		std::cout << "Data : " << wave.data->get_name() << "\n";
+		// std::cout.write(reinterpret_cast<const char *>(wave.GetData().data()), wave.GetData().size());
 	}
 
 	return 0;
