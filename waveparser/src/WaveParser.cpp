@@ -71,17 +71,12 @@ namespace waveparser
 				auto &id3Chunk = wave.Id3Chunk;
 				id3Chunk.Header = id3;
 
-				printf("ID3 Version: v2.%x.%x\n", major, revision);
-				printf("ID3 Size: %u\n", utilities::DecodeSynchsafe(id3.Size));
-				printf("ID3 Flags: %s\n", ToString(id3.Flags).c_str());
-
 				if (!ParseID3(id3Chunk, Version{2, major, revision}))
 					return false;
 				Stream.seekg(chunkEnd);
 			}
 			else
 			{
-				printf("Skipping Chunk... : %.4s (%u bytes)\n", chunkHeader.SubChunkId, chunkHeader.SubChunkSize);
 				Stream.seekg(chunkHeader.SubChunkSize, std::ios::cur);
 			}
 		}
@@ -189,12 +184,8 @@ namespace waveparser
 			if (frame)
 			{
 				auto start = Stream.tellg();
-
 				frame->ProcessData(Stream, header);
 				id3.AddTag(frame);
-
-				uint32_t consumed = Stream.tellg() - start;
-				printf("\t%s expected= %d consumed= %d\n", frameId.c_str(), header.Size, consumed);
 			}
 			else
 			{
