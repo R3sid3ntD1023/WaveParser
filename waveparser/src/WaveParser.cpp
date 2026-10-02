@@ -113,6 +113,13 @@ namespace waveparser
 	{
 		if (!Stream.read((char *)&fmtChunk, sizeof(FMTChunk)))
 			return false;
+
+		fmtChunk.AudioFormat = utilities::FromLittleEndian(fmtChunk.AudioFormat);
+		fmtChunk.NumChannels = utilities::FromLittleEndian(fmtChunk.NumChannels);
+		fmtChunk.SampleRate = utilities::FromLittleEndian(fmtChunk.SampleRate);
+		fmtChunk.ByteRate = utilities::FromLittleEndian(fmtChunk.ByteRate);
+		fmtChunk.BlockAlign = utilities::FromLittleEndian(fmtChunk.BlockAlign);
+		fmtChunk.BitsPerSample = utilities::FromLittleEndian(fmtChunk.BitsPerSample);
 		return true;
 	}
 
@@ -205,7 +212,7 @@ namespace waveparser
 		if (!size)
 			return false;
 
-		chunk.Data.resize(size + 1);
+		chunk.Data.resize(size);
 		if (!Stream.read(reinterpret_cast<char *>(chunk.Data.data()), size))
 			return false;
 

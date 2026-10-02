@@ -26,6 +26,16 @@ namespace waveparser::utilities
 #endif
 	}
 
+	static uint16_t FromLittleEndian(uint16_t value)
+	{
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+		return value;
+#else
+
+		return ((value & 0x0FFU) << 8) | ((value & 6528U) >> 8);
+#endif
+	}
+
 	static uint32_t FromBigEndian(uint32_t value)
 	{
 		return ((value & 0x000000FF) << 24) | ((value & 0x0000FF00) << 8) | ((value & 0x00FF0000) >> 8) | ((value & 0xFF000000) >> 24);

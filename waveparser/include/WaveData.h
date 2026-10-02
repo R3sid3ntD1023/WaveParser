@@ -41,12 +41,12 @@ namespace waveparser
 
 	struct FMTChunk
 	{
-		short AudioFormat = 0;
-		short NumChannels = 0;
-		unsigned SampleRate = 0;
-		unsigned ByteRate = 0;
-		short BlockAlign = 0;
-		short BitsPerSample = 0;
+		uint16_t AudioFormat = 0;
+		uint16_t NumChannels = 0;
+		uint32_t SampleRate = 0;
+		uint32_t ByteRate = 0;
+		uint16_t BlockAlign = 0;
+		uint16_t BitsPerSample = 0;
 	};
 
 	struct ChunkHeader
@@ -159,6 +159,8 @@ namespace waveparser
 
 		uint32_t GetSampleRate() const { return Fmt.SampleRate; }
 
+		uint32_t GetFrameSize() const { return Fmt.NumChannels * Fmt.BitsPerSample / 8; }
+
 		uint32_t GetBitRate() const { return Fmt.SampleRate * Fmt.BitsPerSample; }
 
 		uint32_t GetNumSamplesPerChannel() const
@@ -179,7 +181,7 @@ namespace waveparser
 			return GetNumSamplesPerChannel() * Fmt.NumChannels;
 		}
 
-		const std::vector<byte_t> &GetData() const { return Data->Data; }
+		std::vector<byte_t> &GetData() const { return Data->Data; }
 
 		float GetLength() const { return (float)GetNumSamplesPerChannel() / (float)GetSampleRate(); }
 
